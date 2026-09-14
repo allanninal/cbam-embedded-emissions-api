@@ -3,11 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CBAM Embedded Emissions API</title>
-  <meta name="description" content="Take a CN code, an origin country and a tonnage; get embedded emissions, CBAM certificates owed and their cost — with an audit trail per declaration line. Free Commission data." />
+  <title>CBAM Embedded Emissions API — CN code to certificates &amp; cost (Regulation (EU) 2023/956)</title>
+  <meta name="description" content="Free developer-first API for EU CBAM: give a CN code, origin country and tonnage; get embedded emissions, CBAM certificates owed and their cost at the EU ETS price — with a per-line audit trail using published Commission default values." />
+  <meta name="keywords" content="CBAM, Carbon Border Adjustment Mechanism, embedded emissions, CBAM certificates, CN code, EU ETS price, default values, Regulation (EU) 2023/956, carbon border tax API, emissions calculator API, iron steel aluminium cement fertiliser hydrogen" />
+  <meta name="author" content="Allan Niñal" />
+  <link rel="canonical" href="https://apis.allanninal.dev/cbam/" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="theme-color" content="#12a150" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CBAM Embedded Emissions API" />
+  <meta property="og:title" content="CBAM Embedded Emissions API — CN code to certificates & cost" />
+  <meta property="og:description" content="Embedded emissions, CBAM certificates owed and their cost from a CN code, origin and tonnage — with a per-line audit trail. Free Commission data." />
+  <meta property="og:url" content="https://apis.allanninal.dev/cbam/" />
+  <meta property="og:locale" content="en" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="CBAM Embedded Emissions API" />
+  <meta name="twitter:description" content="CN code + origin + tonnage → embedded emissions, certificates owed, cost, and a per-line audit trail. Free." />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AD%3C/text%3E%3C/svg%3E" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLRBEQ85ZN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DLRBEQ85ZN');
+  </script>
   <link rel="stylesheet" href="styles.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebAPI",
+        "name": "CBAM Embedded Emissions API",
+        "description": "Free developer-first API for the EU Carbon Border Adjustment Mechanism (CBAM, Regulation (EU) 2023/956): from a CN code, origin country and tonnage it computes embedded emissions, CBAM certificates owed and their cost at the EU ETS price, with a per-line audit trail built from published Commission default values.",
+        "url": "https://apis.allanninal.dev/cbam/",
+        "documentation": "https://apis.allanninal.dev/cbam/",
+        "provider": { "@type": "Person", "name": "Allan Niñal", "url": "https://www.allanninal.dev/", "sameAs": ["https://www.linkedin.com/in/allanninal/"] },
+        "keywords": "CBAM, embedded emissions, CBAM certificates, CN code, EU ETS, Regulation (EU) 2023/956",
+        "isAccessibleForFree": true
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What does the CBAM API calculate?", "acceptedAnswer": { "@type": "Answer", "text": "From a CN code, origin country and tonnage it returns the embedded emissions, the number of CBAM certificates owed and their cost at the EU ETS carbon price, plus a per-line audit trail citing every default value, country factor and dataset version used." } },
+          { "@type": "Question", "name": "Which sectors does CBAM cover?", "acceptedAnswer": { "@type": "Answer", "text": "The six in-scope sectors are iron and steel, aluminium, cement, fertilisers, hydrogen and electricity, identified by Combined Nomenclature (CN) codes." } },
+          { "@type": "Question", "name": "Are the figures official?", "acceptedAnswer": { "@type": "Answer", "text": "They are estimates using published Commission default values, stated on a default-values basis. Verified actual emissions require an accredited verifier. This is not the official EU CBAM registry and not legal, tax or customs advice." } },
+          { "@type": "Question", "name": "Is it free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is public and free with per-client rate limiting; an optional API key raises the budget and retains calculation history. Code is MIT-licensed and data is reproduced from free Commission publications with attribution." } }
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "APIs", "item": "https://apis.allanninal.dev/" },
+          { "@type": "ListItem", "position": 2, "name": "CBAM", "item": "https://apis.allanninal.dev/cbam/" }
+        ]
+      },
+      { "@type": "Person", "name": "Allan Niñal", "url": "https://www.allanninal.dev/", "jobTitle": "AI & Software Engineer", "sameAs": ["https://www.linkedin.com/in/allanninal/"] }
+    ]
+  }
+  </script>
 </head>
 <body>
+<nav class="topnav"><div class="topnav-inner">
+  <a class="brand" href="https://apis.allanninal.dev/"><span class="dot"></span> apis.allanninal.dev</a>
+  <a href="https://apis.allanninal.dev/cbam/" class="active">CBAM</a>
+  <a href="https://apis.allanninal.dev/c2pa/">Provenance</a>
+  <a href="https://apis.allanninal.dev/eudr/">EUDR</a>
+  <a href="disclaimer.html">Disclaimer</a>
+  <a href="license.html">License</a>
+</div></nav>
 <header class="hero">
   <h1>CBAM Embedded Emissions API</h1>
   <p class="tagline">
@@ -73,9 +141,141 @@
     </ul>
   </section>
 
+  <!-- ===== Friendly, non-technical plain-language guide ===== -->
+  <section class="friendly" id="what-is-an-api">
+    <h2><svg class="ico ico-lg" viewBox="0 0 48 48"><rect x="4" y="10" width="40" height="28" rx="6" fill="#e3f4ea"/><rect x="10" y="18" width="12" height="4" rx="2" fill="#12a150"/><rect x="10" y="26" width="18" height="4" rx="2" fill="#a4dcbc"/><circle cx="36" cy="20" r="3" fill="#4bbfae"/><circle cx="36" cy="28" r="3" fill="#f6b45a"/></svg> Not technical? Here's the whole idea in simple words</h2>
+
+    <p class="lead-soft">Imagine a <strong>restaurant</strong> 🍽️. You don't march into the
+      kitchen and start cooking. You tell the <strong>waiter</strong> what you'd like, and a
+      few minutes later your dish arrives. An <strong>API</strong> is that waiter — but for
+      software. One app asks for something, the API goes and gets it, and hands back a tidy
+      answer. Nobody has to touch the messy kitchen.</p>
+
+    <h3 class="soft-h3"><span class="num-badge">1</span> What an API actually is</h3>
+    <p>API stands for "Application Programming Interface," but you can forget those words.
+      The useful idea is this: it's a <strong>polite, reliable messenger</strong> that sits
+      between two systems so they can work together without knowing each other's secrets.</p>
+    <div class="analogy">
+      <div class="a-card"><div class="a-emoji">🗺️</div><p class="a-t">Maps in an app</p><p class="a-p">A ride app asks a maps API "where is this address?"</p></div>
+      <div class="a-card"><div class="a-emoji">💳</div><p class="a-t">Card payments</p><p class="a-p">A shop asks a payment API "is this card good?"</p></div>
+      <div class="a-card"><div class="a-emoji">🌦️</div><p class="a-t">Weather widget</p><p class="a-p">A site asks a weather API "what's it like today?"</p></div>
+      <div class="a-card"><div class="a-emoji">🔐</div><p class="a-t">"Log in with…"</p><p class="a-p">One app asks another "is this really them?"</p></div>
+    </div>
+
+    <h3 class="soft-h3"><span class="num-badge">2</span> Why it matters for your business</h3>
+    <p>Most businesses lose time and money in the <em>gaps between tools</em> — someone exports a
+      spreadsheet here, retypes numbers there, emails a file to a partner, and hopes nobody made
+      a typo. An API closes those gaps.</p>
+    <div class="soft-grid">
+      <div class="soft-card"><p class="st">⏱️ Save time</p><p class="sp">Work that took hours by hand happens in a blink, on its own.</p></div>
+      <div class="soft-card"><p class="st">✅ Fewer mistakes</p><p class="sp">No more typos from copying numbers between apps.</p></div>
+      <div class="soft-card"><p class="st">📈 Grow easily</p><p class="sp">Ten customers or ten thousand — it keeps up without extra staff.</p></div>
+      <div class="soft-card"><p class="st">💶 New income</p><p class="sp">You can even <em>sell</em> access — partners pay to use your API.</p></div>
+      <div class="soft-card"><p class="st">🌙 Always on</p><p class="sp">It answers day and night, weekends and holidays included.</p></div>
+      <div class="soft-card"><p class="st">🤝 Better partnerships</p><p class="sp">Give partners a clean, safe door instead of raw access.</p></div>
+    </div>
+
+    <h3 class="soft-h3"><span class="num-badge">3</span> The parts that make one</h3>
+    <div class="analogy">
+      <div class="a-card"><div class="a-emoji">🚪</div><p class="a-t">A door</p><p class="a-p">A clear, documented place to ask for things.</p></div>
+      <div class="a-card"><div class="a-emoji">🛡️</div><p class="a-t">A guard</p><p class="a-p">Keys and limits so only allowed callers get in.</p></div>
+      <div class="a-card"><div class="a-emoji">🧠</div><p class="a-t">A brain</p><p class="a-p">The rules and logic that do the real work.</p></div>
+      <div class="a-card"><div class="a-emoji">🗄️</div><p class="a-t">A memory</p><p class="a-p">Where your data safely lives and is looked up.</p></div>
+    </div>
+
+    <h3 class="soft-h3"><span class="num-badge">4</span> The process, step by step</h3>
+    <ul class="step-list">
+      <li><span class="num-badge">1</span><div><p class="st-t">💬 Talk</p><p class="st-p">You describe the problem in everyday words. No spec, no tech vocabulary required.</p></div></li>
+      <li><span class="num-badge">2</span><div><p class="st-t">✏️ Plan</p><p class="st-p">I sketch a simple plan and agree on what "done" looks like, so there are no surprises.</p></div></li>
+      <li><span class="num-badge">3</span><div><p class="st-t">🔨 Build</p><p class="st-p">I build a small, working slice quickly — something you can actually see and try.</p></div></li>
+      <li><span class="num-badge">4</span><div><p class="st-t">🧪 Test</p><p class="st-p">I check it against real cases so it behaves correctly, safely, and fast.</p></div></li>
+      <li><span class="num-badge">5</span><div><p class="st-t">🚀 Live</p><p class="st-p">I ship it, keep it running, and it's ready for your apps and partners.</p></div></li>
+    </ul>
+
+    <h3 class="soft-h3"><span class="num-badge">5</span> What you actually get</h3>
+    <div class="pill-row">
+      <span class="pill">✅ A live, working API</span>
+      <span class="pill">📖 Plain docs anyone can follow</span>
+      <span class="pill">🔐 Keys &amp; safe access control</span>
+      <span class="pill">🚦 Limits so it can't be abused</span>
+      <span class="pill">🧪 Tests that prove it works</span>
+      <span class="pill">🌐 A demo page to show it off</span>
+      <span class="pill">📦 Everything owned by you</span>
+    </div>
+
+    <h3 class="soft-h3"><span class="num-badge">6</span> Built to a secure, professional standard</h3>
+    <p>A public API is part of your <strong>brand</strong> — it's a front door the whole internet
+      can knock on. So it's built the way a bank builds a vault, not the way a hobby project throws
+      something online. Every API in this family is shipped to the same standard:</p>
+    <div class="soft-grid">
+      <div class="soft-card"><p class="st">🔒 Encrypted by default</p><p class="sp">HTTPS everywhere with automatic certificates and HSTS — data is never sent in the clear.</p></div>
+      <div class="soft-card"><p class="st">🚦 Abuse-resistant</p><p class="sp">Per-caller rate limits at the gateway stop floods and keep it fair and available for everyone.</p></div>
+      <div class="soft-card"><p class="st">🧰 Standards-based</p><p class="sp">A documented OpenAPI contract, predictable JSON, and clear status codes — the conventions every developer already expects.</p></div>
+      <div class="soft-card"><p class="st">🛡️ Hardened surface</p><p class="sp">Locked-down servers, no version banners to probe, input validated, and no secrets in the code.</p></div>
+      <div class="soft-card"><p class="st">🧾 Provable &amp; auditable</p><p class="sp">Versioned data and reproducible results, so an answer can be traced back to its source and defended.</p></div>
+      <div class="soft-card"><p class="st">✅ Tested &amp; monitored</p><p class="sp">Automated tests prove behaviour before release, and health checks keep it honest in production.</p></div>
+    </div>
+
+    <h4 class="soft-h3">Why that's good for your brand online</h4>
+    <p>A clean, reliable, well-documented API is a quiet but powerful marketing asset. It tells
+      partners and customers you're serious — and it earns trust that spreads on its own:</p>
+    <div class="pill-row">
+      <span class="pill">🤝 Partners integrate faster and trust you more</span>
+      <span class="pill">🔎 Public docs get found and shared</span>
+      <span class="pill">⭐ "It just works" becomes your reputation</span>
+      <span class="pill">🧩 Developers recommend tools they enjoy using</span>
+      <span class="pill">🌍 A branded endpoint (your domain) reinforces who built it</span>
+    </div>
+
+    <hr class="soft" />
+
+    <h3 class="soft-h3">🏭 A real example: this CBAM API</h3>
+    <div class="case">
+      <p>This isn't theory — the page you're on is served by a real API I built. It tackles a
+        concrete problem from the EU <strong>Carbon Border Adjustment Mechanism (CBAM)</strong>: from
+        1 January 2026, importers of iron &amp; steel, aluminium, cement, fertilisers, hydrogen and
+        electricity must report embedded emissions and surrender certificates.</p>
+      <p><strong>The question your app asks:</strong></p>
+      <pre><code>POST /v1/calculate
+{ "cnCode": "72071110", "originCountry": "IN", "tonnes": 120 }</code></pre>
+      <p><strong>The clean answer it hands back:</strong> the embedded emissions, the CBAM
+        certificates owed and their cost — with a <strong>per-line audit trail</strong> citing every
+        default value, country factor and dataset version used.</p>
+      <div class="kv">
+        <div class="k"><div class="kk">Spreadsheet by hand</div><div class="vv">Error-prone 😩</div></div>
+        <div class="k"><div class="kk">With the API</div><div class="vv">A split second ⚡</div></div>
+        <div class="k"><div class="kk">Every figure</div><div class="vv">Traceable to source 📑</div></div>
+      </div>
+      <p>The same building blocks — a guard, a brain, a memory — pointed at one real problem.
+        The same kit can become an API for <em>your</em> idea.</p>
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section id="contact">
+    <h2>👋 Want an API for your idea?</h2>
+    <p>This API was designed and built by <strong>Allan Niñal</strong>, an AI &amp; software engineer
+      who ships friendly, well-made, developer-first APIs and data products. Tell me the problem in
+      plain words — CBAM, compliance, carbon, or anything else — and I'll turn it into something
+      that works.</p>
+    <div class="cta-row">
+      <a class="cta-btn" href="https://www.allanninal.dev/">Visit allanninal.dev</a>
+      <a class="cta-btn alt" href="https://www.linkedin.com/in/allanninal/">Connect on LinkedIn</a>
+    </div>
+  </section>
+
   <footer>
-    <p>Code MIT · data reproduced from free European Commission publications with attribution.
-    Regulation (EU) 2023/956 (CBAM). See DISCLAIMER.</p>
+    <div class="foot-links">
+      <a href="https://apis.allanninal.dev/">Home</a>
+      <a href="https://apis.allanninal.dev/cbam/">CBAM</a>
+      <a href="https://apis.allanninal.dev/c2pa/">Provenance</a>
+      <a href="https://apis.allanninal.dev/eudr/">EUDR</a>
+      <a href="disclaimer.html">Disclaimer</a>
+      <a href="license.html">License</a>
+      <a href="openapi.yaml">OpenAPI</a>
+      <a href="https://www.allanninal.dev/">allanninal.dev</a>
+    </div>
+    <p>Built by <a href="https://www.allanninal.dev/">Allan Niñal</a> · Code MIT · data from free European Commission publications with attribution · Regulation (EU) 2023/956. Not legal advice — see the <a href="disclaimer.html">disclaimer</a>.</p>
   </footer>
 </main>
 

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Disclaimer — CBAM Embedded Emissions API</title>
+  <meta name="description" content="Disclaimer for the CBAM Embedded Emissions API: an estimation and audit-trail tool using published Commission default values — not legal/tax/customs advice, not the official EU CBAM registry, not a verified-emissions service." />
+  <link rel="canonical" href="https://apis.allanninal.dev/cbam/disclaimer.html" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#12a150" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Disclaimer — CBAM Embedded Emissions API" />
+  <meta property="og:description" content="Estimation and audit-trail tool using published Commission default values — not legal advice, not the official EU CBAM registry." />
+  <meta property="og:url" content="https://apis.allanninal.dev/cbam/disclaimer.html" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AD%3C/text%3E%3C/svg%3E" />
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLRBEQ85ZN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DLRBEQ85ZN');
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<nav class="topnav"><div class="topnav-inner">
+  <a class="brand" href="https://apis.allanninal.dev/"><span class="dot"></span> apis.allanninal.dev</a>
+  <a href="https://apis.allanninal.dev/cbam/">CBAM</a>
+  <a href="https://apis.allanninal.dev/c2pa/">Provenance</a>
+  <a href="https://apis.allanninal.dev/eudr/">EUDR</a>
+  <a href="disclaimer.html" class="active">Disclaimer</a>
+  <a href="license.html">License</a>
+</div></nav>
+<header>
+  <h1>Disclaimer</h1>
+  <p class="tagline">CBAM Embedded Emissions API</p>
+  <a class="backlink" href="./">&larr; Back to the API home</a>
+</header>
+
+<main class="prose">
+  <section>
+    <p>This project provides an <strong>estimation and audit-trail tool</strong> for the EU Carbon
+      Border Adjustment Mechanism (CBAM, Regulation (EU) 2023/956). Given a CN code, an origin country,
+      and a tonnage, it computes <strong>embedded emissions</strong>, the number of <strong>CBAM
+      certificates</strong> owed, and their <strong>cost</strong> at the EU ETS carbon price, using
+      <strong>published Commission default values</strong>, and returns a per-line audit trail of every
+      lookup and factor used.</p>
+
+    <h2>It is not, and does not provide</h2>
+    <ul>
+      <li><strong>Legal, tax, or customs advice.</strong> Nothing here constitutes legal, regulatory, or
+        compliance advice.</li>
+      <li><strong>The official EU CBAM registry.</strong> This is not an EU system and does not submit
+        declarations. It produces a calculation and audit trail for the declarant's own use.</li>
+      <li><strong>A determination of eligibility.</strong> It does not determine whether a party is an
+        authorised CBAM declarant or otherwise eligible to import.</li>
+      <li><strong>A verified-emissions service.</strong> The calculation uses <strong>default values</strong>.
+        Where the CBAM regime requires or permits <strong>verified actual emissions</strong>, those must be
+        established by an <strong>accredited verifier</strong> — that is the declarant's obligation and is out
+        of scope here.</li>
+    </ul>
+
+    <h2>Two points that matter</h2>
+    <ol>
+      <li><strong>Default-value figures are estimates.</strong> They are derived from Commission default
+        embedded-emission values and country adjustment factors, not from installation-specific measured
+        data. A <code>default-values</code> basis is stated on every calculation.</li>
+      <li><strong>The carbon price moves.</strong> Certificate cost depends on the EU ETS price at the
+        relevant time. The price and its <code>asOf</code> timestamp are recorded on every calculation; a
+        stale cached price is flagged rather than served silently.</li>
+    </ol>
+
+    <p>Calculated figures should be treated as decision-support estimates, not definitive legal or
+      financial determinations. Regulatory dates, thresholds, default values, and scope referenced in this
+      project may change — always confirm against the current EU Official Journal texts, the current
+      Commission CBAM tables, and the current EU ETS price.</p>
+
+    <a class="backlink" href="./">&larr; Back to the API home</a>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-links">
+    <a href="https://apis.allanninal.dev/">Home</a>
+    <a href="https://apis.allanninal.dev/cbam/">CBAM</a>
+    <a href="https://apis.allanninal.dev/c2pa/">Provenance</a>
+    <a href="https://apis.allanninal.dev/eudr/">EUDR</a>
+    <a href="disclaimer.html">Disclaimer</a>
+    <a href="license.html">License</a>
+    <a href="openapi.yaml">OpenAPI</a>
+    <a href="https://www.allanninal.dev/">allanninal.dev</a>
+  </div>
+  <p>Built by <a href="https://www.allanninal.dev/">Allan Niñal</a> · Code MIT · data from free European Commission publications with attribution · Regulation (EU) 2023/956. Not legal advice — see the <a href="disclaimer.html">disclaimer</a>.</p>
+</footer>
+</body>
+</html>
