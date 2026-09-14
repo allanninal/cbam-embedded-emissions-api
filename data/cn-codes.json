@@ -1,72 +1,1580 @@
 {
-  "version": "cn-2026.2",
-  "source": "Regulation (EU) 2023/956, Annex I (CN codes under Regulation (EEC) No 2658/87), cross-checked against the published CBAM goods-scope tables",
+  "version": "cn-2026.3",
+  "source": "Commission Implementing Regulation (EU) 2025/2621 default-value workbook (CN codes as published per good) + Reg (EU) 2023/956 Annex I",
   "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
   "effectiveDate": "2026-01-01",
-  "note": "CBAM Annex I goods scope. In the Annex, scope is defined at the HS heading / CN subheading level: an entry covers the heading AND all subheadings under it (e.g. 7208 covers 72081000). The list below carries a representative CN subheading for each in-scope heading so the calculator can resolve common declarations; a production deployment should expand it to every 8-digit CN subheading under the in-scope headings and honour the exclusions in `exclusions`. Iron & steel covers the whole of chapter 72 plus headings 7301-7311, 7318, 7326 and 2601 12; aluminium covers 7601, 7603-7614, 7616; cement 2507 00 80 and 2523; fertilisers 2808 00, 2814, 2834 21, 3102, 3105 (except 3105 60); hydrogen 2804 10; electricity 2716. Confirm against the current Official Journal before production use.",
+  "note": "CN-code -> CBAM good -> sector mapping, derived from the Commission default-value workbook so it aligns exactly with data/default-values.json (same CN granularity). Electricity (2716) is added separately as it is priced per MWh and has no per-tonne default value. Exclusions per Annex I: 7202 ferro-alloys, 7204 scrap, 3105 60.",
   "exclusions": [
-    "7202 (ferro-alloys: ferro-silicon, ferro-manganese, etc. — not in scope)",
-    "7204 (ferrous waste and scrap — not in scope)",
-    "3105 60 (fertilisers with only phosphorus and potassium — not in scope)"
+    "7202 (ferro-alloys)",
+    "7204 (ferrous waste and scrap)",
+    "3105 60 (phosphorus+potassium only)"
   ],
   "codes": [
-    { "cnCode": "26011200", "good": "Agglomerated iron ores and concentrates", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72011000", "good": "Non-alloy pig iron", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72061000", "good": "Iron and non-alloy steel in ingots", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72071110", "good": "Semi-finished products of iron/non-alloy steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72071900", "good": "Semi-finished products of iron/non-alloy steel, other", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72081000", "good": "Flat-rolled products of iron/non-alloy steel, hot-rolled, in coils", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72091500", "good": "Flat-rolled products of iron/non-alloy steel, cold-rolled", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72101100", "good": "Flat-rolled products of iron/non-alloy steel, plated/coated with tin", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72142000", "good": "Bars and rods of iron/non-alloy steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72279500", "good": "Bars and rods of other alloy steel, hot-rolled", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "72285000", "good": "Other bars and rods of alloy steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73011000", "good": "Sheet piling of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73021000", "good": "Railway track rails of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73030010", "good": "Tubes and pipes of cast iron", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73041000", "good": "Line pipe for oil/gas pipelines, seamless, of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73051100", "good": "Line pipe for oil/gas, longitudinally submerged arc welded", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73061100", "good": "Other tubes/pipes for oil/gas, welded, of stainless steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73071100", "good": "Tube or pipe fittings of non-malleable cast iron", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73089059", "good": "Structures and parts of structures, of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73090059", "good": "Reservoirs, tanks, vats of iron or steel, capacity > 300 l", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73101000", "good": "Tanks, casks, drums of iron or steel, capacity >= 50 l", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73110011", "good": "Containers for compressed or liquefied gas, of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73181500", "good": "Screws and bolts of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "73269098", "good": "Other articles of iron or steel", "sector": "iron-steel", "inScope": true },
-    { "cnCode": "76011000", "good": "Unwrought aluminium, not alloyed", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76012000", "good": "Unwrought aluminium alloys", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76032000", "good": "Aluminium powders of lamellar structure; flakes", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76041000", "good": "Aluminium bars, rods and profiles, not alloyed", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76051100", "good": "Aluminium wire, not alloyed, max cross-section > 7 mm", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76061190", "good": "Aluminium plates, sheets and strip, rectangular, not alloyed", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76071119", "good": "Aluminium foil, not backed, rolled but not further worked", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76082000", "good": "Aluminium tubes and pipes, of aluminium alloys", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76090000", "good": "Aluminium tube or pipe fittings", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76101000", "good": "Aluminium doors, windows and their frames", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76110000", "good": "Aluminium reservoirs, tanks, vats, capacity > 300 l", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76121000", "good": "Collapsible tubular containers of aluminium", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76130000", "good": "Aluminium containers for compressed or liquefied gas", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76141000", "good": "Stranded wire, cables of aluminium, with steel core", "sector": "aluminium", "inScope": true },
-    { "cnCode": "76169990", "good": "Other articles of aluminium", "sector": "aluminium", "inScope": true },
-    { "cnCode": "25070080", "good": "Other kaolinic clays", "sector": "cement", "inScope": true },
-    { "cnCode": "25231000", "good": "Cement clinkers", "sector": "cement", "inScope": true },
-    { "cnCode": "25232100", "good": "White Portland cement", "sector": "cement", "inScope": true },
-    { "cnCode": "25232900", "good": "Portland cement, other", "sector": "cement", "inScope": true },
-    { "cnCode": "25233000", "good": "Aluminous cement", "sector": "cement", "inScope": true },
-    { "cnCode": "25239000", "good": "Other hydraulic cements", "sector": "cement", "inScope": true },
-    { "cnCode": "28080000", "good": "Nitric acid; sulphonitric acids", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "28141000", "good": "Anhydrous ammonia", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "28142000", "good": "Ammonia in aqueous solution", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "28342100", "good": "Nitrates of potassium", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31021010", "good": "Urea, nitrogen content > 45% by weight of dry product", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31022900", "good": "Ammonium sulphate double salts and mixtures", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31023000", "good": "Ammonium nitrate", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31025000", "good": "Sodium nitrate", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31051000", "good": "Fertilisers in tablets or similar forms/packages <= 10 kg", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31052000", "good": "Mineral/chemical fertilisers with N, P and K", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "31055100", "good": "Fertilisers containing nitrates and phosphates", "sector": "fertilisers", "inScope": true },
-    { "cnCode": "28041000", "good": "Hydrogen", "sector": "hydrogen", "inScope": true },
-    { "cnCode": "27160000", "good": "Electrical energy", "sector": "electricity", "inScope": true }
+    {
+      "cnCode": "2507008080",
+      "good": "Calcined clay",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "2523100010",
+      "good": "White clinker",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "2523100090",
+      "good": "Other clinker including grey clinker",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "25232100",
+      "good": "White Portland cement",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "25232900",
+      "good": "Grey Portland cement",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "25233000",
+      "good": "Aluminous cement",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "2523900010",
+      "good": "White hydraulic cement",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "2523900090",
+      "good": "Other hydraulic cements including grey hydraulic cements",
+      "sector": "cement",
+      "inScope": true
+    },
+    {
+      "cnCode": "26011200",
+      "good": "Agglomerated iron ores and concentrates (excl. roasted iron pyrites)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "28041000",
+      "good": "Hydrogen",
+      "sector": "hydrogen",
+      "inScope": true
+    },
+    {
+      "cnCode": "28080000",
+      "good": "Nitric acid; sulphonitric acids",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "28141000",
+      "good": "Anhydrous ammonia",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "28142000",
+      "good": "Ammonia in aqueous solution",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "28342100",
+      "good": "Nitrate of potassium",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31021012",
+      "good": "Urea in aqueous solution, containing >45% nitrogen in relation to the weight of the dry product and containing =>31,8% but <=33,2 % by weight of urea (excl. that in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31021015",
+      "good": "Urea in aqueous solution, containing >45% nitrogen in relation to the weight of the dry product and containing >33,2% but <=55% by weight of urea (excl. that in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31021019",
+      "good": "Urea, whether or not in aqueous solution, containing >45% nitrogen in relation to the weight of the dry product (excl. that in tablets or similar forms, or in packages with a gross weight of <= 10 kg, or in aqueous solution containing =>31,8% but <=55% by weight of urea)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31021090",
+      "good": "Urea, whether or not in aqueous solution, containing <= 45% by weight of nitrogen on the dry anhydrous product (excl. goods of this chapter in tablets or similar forms or in packages of a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31022100",
+      "good": "Ammonium sulphate (excl. that in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31022900",
+      "good": "Double salts and mixtures of ammonium sulphate and ammonium nitrate",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31023010",
+      "good": "Ammonium nitrate in aqueous solution (excl. that in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31023090",
+      "good": "Ammonium nitrate (excl. that in aqueous solution, in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31024010",
+      "good": "Mixtures of ammonium nitrate with calcium carbonate or other inorganic non-fertilising substances, for use as fertilisers, containing <= 28% nitrogen by weight (excl. those in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31024090",
+      "good": "Mixtures of ammonium nitrate with calcium carbonate or other inorganic non-fertilising substances, for use as fertilisers, containing > 28% nitrogen by weight (excl. those in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31025000",
+      "good": "Sodium nitrate (excl. that in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31026000",
+      "good": "Double salts and mixtures of calcium nitrate and ammonium nitrate (excl. those in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31028000",
+      "good": "Mixtures of urea and ammonium nitrate in aqueous or ammoniacal solution (excl. those in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31029000",
+      "good": "Mineral or chemical nitrogen fertilisers (excl. urea; ammonium sulphate; ammonium nitrate; sodium nitrate; double salts and mixtures of ammonium nitrate with ammonium sulphate or calcium; mixtures of urea and ammonium nitrate in aqueous or ammoniacal solution; mixtures of ammonium nitrate and calcium carbonate or other non-fertilising inorganic elements; in tablets or similar in packages <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31051000",
+      "good": "Mineral or chemical fertilisers of animal or vegetable origin, in tablets or similar forms, or in packages with a gross weight of <= 10 kg",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31052010",
+      "good": "Mineral or chemical fertilisers containing phosphorus and potassium, with a nitrogen content > 10 % by weight on the dry anhydrous product (excl. those in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31052090",
+      "good": "Mineral or chemical fertilisers containing nitrogen, phosphorus and potassium, with a nitrogen content <= 10 % by weight on the dry anhydrous product (excl. those in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31053000",
+      "good": "Diammonium hydrogenorthophosphate \"diammonium phosphate\" (excl. that in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31054000",
+      "good": "Ammonium dihydrogenorthophosphate \"monoammonium phosphate\", whether or not mixed with diammonium hydrogenorthophosphate \"diammonium phosphate\" (excl. that in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31055100",
+      "good": "Other mineral or chemical fertilisers containing the two fertilising elements nitrogen and phosphorus (nitrates and phosphates)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31055900",
+      "good": "Other mineral or chemical fertilisers containing the two fertilising elements nitrogen and phosphorus (excl. nitrates and phosphates)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31059020",
+      "good": "Mineral or chemical fertilisers containing the two fertilising elements nitrogen and potassium, or one principal fertilising substance only, incl. mixtures of animal or vegetable fertilisers with chemical or mineral fertilisers, containing > 10% nitrogen by weight (excl. in tablets or similar forms, or in packages with a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "31059080",
+      "good": "Mineral or chemical fertilisers containing the two fertilising elements nitrogen and potassium, or one main fertilising element, incl. mixtures of animal or vegetable fertilisers with chemical or mineral fertilisers, not containing nitrogen or with a nitrogen content, by weight, of <= 10% (excl. in tablets or similar forms or in packages of a gross weight of <= 10 kg)",
+      "sector": "fertilisers",
+      "inScope": true
+    },
+    {
+      "cnCode": "7201",
+      "good": "Pig iron and spiegeleisen, in pigs, blocks or other primary forms",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "720211",
+      "good": "Ferro-manganese, containing by weight > 2% of carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "720219",
+      "good": "Ferro-manganese, containing by weight <= 2% carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "720241",
+      "good": "Ferro-chromium, containing by weight > 4% of carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "720249",
+      "good": "Ferro-chromium, containing by weight <= 4% of carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72026000",
+      "good": "Ferro-nickel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7203",
+      "good": "Ferrous products obtained by direct reduction of iron ore and other spongy ferrous products, in lumps, pellets or similar forms; iron having a minimum purity by weight of 99,94%, in lumps, pellets or similar forms",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7205",
+      "good": "Granules and powders of pig iron, spiegeleisen, iron or steel (excl. granules and powders of ferro-alloys, turnings and filings of iron or steel, radioactive iron powders \"isotopes\" and certain low-calibre, substandard balls for ballbearings)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72061000",
+      "good": "Ingots, of iron and non-alloy steel (excl. remelted scrap ingots, continuous cast products, iron of heading 7203)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72069000",
+      "good": "Iron and non-alloy steel, in puddled bars or other primary forms (excl. ingots, remelted scrap ingots, continuous cast products, iron of heading 7203)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071111",
+      "good": "Semi-finished products, of non-alloy free-cutting steel, containing by weight < 0,25% carbon, of square or rectangular cross-section, the width < twice the thickness, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071114",
+      "good": "Semi-finished products, of iron or non-alloy steel, containing by weight < 0,25% carbon, of square or rectangular cross-section, the width < twice the thickness of <= 130 mm, rolled or obtained by continuous casting (excl. free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071116",
+      "good": "Semi-finished products, of iron or non-alloy steel, containing by weight < 0,25% carbon, of square or rectangular cross-section, the width < twice the thickness of > 130 mm, rolled or obtained by continuous casting (excl. free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071190",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight < 0,25% carbon, of rectangular cross-section, the width < twice the thickness, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071210",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight < 0,25 of carbon, of rectangular \"other than square\" cross-section, the width measuring >= twice the thickness, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071290",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight < 0,25% carbon, of rectangular \"other than square\" cross-section, the width >= twice the thickness, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071912",
+      "good": "Semi-finished products, of iron or non-alloy steel, containing by weight < 0,25% carbon, of circular or polygonal cross-section, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071919",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight < 0,25% carbon, of circular or polygonal cross-section, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72071980",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight < 0,25% carbon (excl. semi-products, of square, rectangular, circular or polygonal cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072011",
+      "good": "Semi-finished products, of non-alloy free-cutting steel, containing by weight >= 0,25% carbon, of square or rectangular cross-section, the width < twice the thickness, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072015",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25% but < 0,6% carbon, of square or rectangular cross-section, the width < twice the thickness, rolled or obtained by continuous casting (excl. free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072017",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,6% carbon, of square or rectangular cross-section, the width < twice the thickness, rolled or obtained by continuous casting (excl. free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072019",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25% carbon, of square or rectangular cross-section, the width < twice the thickness, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072032",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25 of carbon, of rectangular \"other than square\" cross-section, the width measuring >= twice the thickness, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072039",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25% carbon, of rectangular \"other than square\" cross-section and the width >= twice the thickness, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072052",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25% carbon, of circular or polygonal cross-section, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072059",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,6% carbon, of circular or polygonal cross-section, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72072080",
+      "good": "Semi-finished products of iron or non-alloy steel, containing by weight >= 0,25% carbon (excl. those of square, rectangular, circular or polygonal cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7208",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width >= 600 mm, hot-rolled, not clad, plated or coated",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7209",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width of >= 600 mm, cold-rolled \"cold-reduced\", not clad, plated or coated",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7210",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width >= 600 mm, hot-rolled or cold-rolled \"cold-reduced\", clad, plated or coated",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72111300",
+      "good": "Flat-rolled products of iron or non-alloy steel, simply hot-rolled on four faces or in a closed box pass, not clad, plated or coated, of a width of > 150 mm but < 600 mm and a thickness of >= 4 mm, not in coils, without patterns in relief, commonly known as \"wide flats\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72111400",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width < 600 mm, not further worked than hot-rolled, not clad, plated or coated, of a thickness of >= 4,75 mm (excl. \"wide flats\")",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72111900",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width < 600 mm, simply hot-rolled, not clad, plated or coated, of a thickness < 4,75 mm (excl. \"wide flats\")",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721123",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width of < 600 mm, simply cold-rolled \"cold-reduced\", not clad, plated or coated, containing by weight < 0,25% of carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72112900",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width of < 600 mm, simply cold-rolled \"cold-reduced\", not clad, plated or coated, containing by weight >= 0,25% of carbon",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721190",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width of < 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and further worked, but not clad, plated or coated",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7212",
+      "good": "Flat-rolled products of iron or non-alloy steel, of a width of < 600 mm, hot-rolled or cold-rolled \"cold-reduced\", clad, plated or coated",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7213",
+      "good": "Bars and rods of iron or non-alloy steel, hot-rolled, in irregularly wound coils",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72141000",
+      "good": "Bars and rods, of iron or non-alloy steel, not further worked than forged (excl. in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72142000",
+      "good": "Bars and rods, of iron or non-alloy steel, with indentations, ribs, groves or other deformations produced during the rolling process",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72143000",
+      "good": "Bars and rods, of non-alloy free-cutting steel, not further worked than hot-rolled, hot-drawn or hot-extruded (excl. containing indentations, ribs, grooves or other deformations produced during the rolling process or twisted after rolling)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721491",
+      "good": "Bars and rods, of iron or non-alloy steel, not further worked than hot-rolled, hot-drawn or hot-extruded, of rectangular \"other than square\" cross-section (excl. containing indentations, ribs, grooves or other deformations produced during the rolling process, bars and rods twisted after rolling and free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721499",
+      "good": "Bars and rods, of iron or non-alloy steel, only hot-rolled, only hot-drawn or only hot-extruded (excl. of rectangular [other than square] cross-section and those containing indentations, ribs, grooves or other deformations produced during the rolling process, and of non-alloy free-cutting steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7215",
+      "good": "Bars and rods, of iron or non-alloy steel, cold-formed or cold-finished, whether or not further worked, or hot-formed and further worked, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7216",
+      "good": "Angles, shapes and sections of iron or non-alloy steel, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721710",
+      "good": "Wire of iron or non-alloy steel, in coils, not plated or coated, whether or not polished (excl. bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721720",
+      "good": "Wire of iron or non-alloy steel, in coils, plated or coated with zinc (excl. bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721730",
+      "good": "Wire of iron or non-alloy steel, in coils, plated or coated with base metals (excl. plated or coated with zinc, and bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721790",
+      "good": "Wire of iron or non-alloy steel, in coils, plated or coated (excl. plated or coated with base metals, and bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72181000",
+      "good": "Steel, stainless, in ingots and other primary forms (excl. waste and scrap in ingot form, and products obtained by continuous casting)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721891",
+      "good": "Semi-finished products of stainless steel, of rectangular \"other than square\" cross-section",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72189911",
+      "good": "Semi-finished products of stainless steel, of square cross-section, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72189919",
+      "good": "Semi-finished products of stainless steel, of square cross-section, forged",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72189920",
+      "good": "Semi-finished products of stainless steel, of circular cross-section or of cross-section other than square or rectangular, rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72189980",
+      "good": "Semi-finished products of stainless steel, forged (excl. products of square or rectangular cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72191100",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, in coils, of a thickness of > 10 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721912",
+      "good": "Flat-rolled products of stainless steel, of a width of>= 600 mm, not further worked than hot-rolled, in coils, of a thickness of >= 4,7 mm and <= 10 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721913",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, in coils, of a thickness of >= 3 mm and < 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721914",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, in coils, of a thickness of < 3 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721921",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, not in coils, of a thickness of > 10 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721922",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, not in coils, of a thickness of >= 4,75 mm and <= 10 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72192300",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, not in coils, of a thickness of >= 3 mm and < 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72192400",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than hot-rolled, not in coils, of a thickness of < 3 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72193100",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\", of a thickness of >= 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721932",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\", of a thickness of >= 3 mm but < 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721933",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\", of a thickness of > 1 mm but < 3 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721934",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\", of a thickness of >= 0,5 mm but <= 1 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721935",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\", of a thickness of < 0,5 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "721990",
+      "good": "Flat-rolled products of stainless steel, of a width of >= 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and further worked",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72201100",
+      "good": "Flat-rolled products of stainless steel, of a width of < 600 mm, not further worked than hot-rolled, of a thickness of >= 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72201200",
+      "good": "Flat-rolled products of stainless steel, of a width of < 600 mm, not further worked than hot-rolled, of a thickness of < 4,75 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722020",
+      "good": "Flat-rolled products of stainless steel, of a width of < 600 mm, not further worked than cold-rolled \"cold-reduced\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722090",
+      "good": "Flat-rolled products of stainless steel, of a width of < 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and further worked",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7221",
+      "good": "Bars and rods of stainless steel, hot-rolled, in irregularly wound coils",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722211",
+      "good": "Bars and rods of stainless steel, only hot-rolled, only hot-drawn or only hot-extruded, of circular cross-section",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722219",
+      "good": "Bars and rods of stainless steel, only hot-rolled, only hot-drawn or only extruded (excl. of circular cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722220",
+      "good": "Other bars and rods of stainless steel, not further worked than cold-formed or cold-finished",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722230",
+      "good": "Other bars and rods of stainless steel, cold-formed or cold-finished and further worked, or not further worked than forged, or forged, or hot-formed by other means and further worked, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722240",
+      "good": "Angles, shapes and sections of stainless steel, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722300",
+      "good": "Wire of stainless steel, in coils (excl. bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722410",
+      "good": "Steel, alloy, other than stainless, in ingots or other primary forms (excl. waste and scrap in ingot form, and products obtained by continuous casting)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249002",
+      "good": "Semi-finished products of tool steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249003",
+      "good": "Semi-finished products of high-speed steel, of square or rectangular cross-section, hot-rolled or obtained by continuous casting the width measuring < twice the thickness",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249005",
+      "good": "Semi-finished products of steel containing by weight <= 0,7% of carbon, 0,5% to 1,2% of manganese, 0,6% to 2,3% of silicon, or of steel containing by weight >= 0,0008% of boron with any other element < the minimum content referred to in Note 1 f to chapter 72, of square or rectangular cross-section, hot rolled or obtained by continuous casting, the width measuring < twice the thickness",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249007",
+      "good": "Semi-finished products of alloy steel other than stainless steel, of square or rectangular cross-section, hot-rolled or obtained by continuous casting, the width measuring < twice the thickness (excl. of tool steel, high-speed steel and articles of subheading 7224.90.05)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249014",
+      "good": "Semi-finished products of alloy steel other than stainless steel, of square or rectangular cross-section, hot-rolled or obtained by continuous casting, the width measuring >= twice the thickness (excl. of tool steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249018",
+      "good": "Semi-finished products of alloy steel other than stainless steel, of square or rectangular cross-section, forged (excl. of tool steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249031",
+      "good": "Semi-finished products of steel containing by weight 0,9% to 1,15% carbon, 0,5% to 2% of chromium and, if present, <= 0,5% of molybdenum, cut into shapes other than square or rectangular, hot-rolled or obtained by continuous casting",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249038",
+      "good": "Semi-finished products of alloy steel, other than stainless steel, cut into shapes other than square or rectangular, hot-rolled or obtained by continuous casting (excl. of tool steel and products containing by weight 0,9% to 1,15% of carbon, 0,5% to 2% of chromium and, if present, <= 0,5% of molybdenum)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72249090",
+      "good": "Semi-finished products of alloy steel, other than stainless steel, forged (excl. of tool steel and products of square or rectangular, circular or polygamol cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72251100",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of >= 600 mm, grain-oriented",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72251910",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of >= 600 mm, hot-rolled",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72251990",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of >= 600 mm, cold-rolled \"cold-reduced\", non-grain-oriented",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722530",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, not further worked than hot-rolled, in coils (excl. products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722540",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, not further worked than hot-rolled, not in coils (excl. products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722550",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, not further worked than cold-rolled \"cold-reduced\" (excl. products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72259100",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and electrolytically plated or coated with zinc (excl. products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72259200",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and plated or coated with zinc (excl. electrolytically plated or coated and products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72259900",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of >= 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and further worked (excl. plated or coated with zinc and products of silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72261100",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of < 600 mm, hot-rolled or cold-rolled \"cold-reduced\", grain-oriented",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72261910",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of < 600 mm, not further worked than hot-rolled",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72261980",
+      "good": "Flat-rolled products of silicon-electrical steel, of a width of < 600 mm, cold-rolled \"cold-reduced\", whether or not further worked, or hot-rolled and further worked, non-grain-oriented",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72262000",
+      "good": "Flat-rolled products of high-speed steel, of a width of <= 600 mm, hot-rolled or cold-rolled \"cold-reduced\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722691",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of < 600 mm, not further worked than hot-rolled (excl. products of high-speed steel or silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72269200",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of < 600 mm, not further worked than cold-rolled \"cold-reduced\" (excl. products of high-speed steel or silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722699",
+      "good": "Flat-rolled products of alloy steel other than stainless, of a width of < 600 mm, hot-rolled or cold-rolled \"cold-reduced\" and further worked (excl. products of high-speed steel or silicon-electrical steel)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7227",
+      "good": "Bars and rods of alloy steel other than stainless, hot-rolled, in irregularly wound coils",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72281020",
+      "good": "Bars and rods of high-speed steel, not further worked than hot-rolled, hot-drawn or extruded, and hot-rolled, hot-drawn or extruded, not further worked than clad (excl. semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72281050",
+      "good": "Bars and rods of high-speed steel, forged (excl. semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72281090",
+      "good": "Bars and rods of high-speed steel, not further worked than cold-formed or cold-finished, whether or not further worked, or hot-formed and further worked (excl. forged products, semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722820",
+      "good": "Bars and rods of silico-manganese steel (excl. semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722830",
+      "good": "Bars and rods of alloy steel other than stainless, not further worked than hot-rolled, hot-drawn or extruded (excl. products of high-speed steel or silico-manganese steel, semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722840",
+      "good": "Bars and rods of alloy steel other than stainless, not further worked than forged (excl. products of high-speed steel or silico-manganese steel, semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722850",
+      "good": "Bars and rods of alloy steel other than stainless, not further worked than cold-formed or cold-finished (excl. products of high-speed steel or silico-manganese steel, semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722860",
+      "good": "Bars and rods of alloy steel other than stainless, cold-formed or cold-finished and further worked or hot-formed and further worked, n.e.s. (excl. products of high-speed steel or silico-manganese steel, semi-finished products, flat-rolled products and hot-rolled bars and rods in irregularly wound coils)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "722870",
+      "good": "Angles, shapes and sections of alloy steel other than stainless, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "72288000",
+      "good": "Hollow drill bars and rods, of alloy or non-alloy steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7229",
+      "good": "Wire of alloy steel other than stainless, in coils (excl. bars and rods)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7301",
+      "good": "Sheet piling of iron or steel, whether or not drilled, punched or made from assembled elements; welded angles, shapes and sections, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7302",
+      "good": "Railway or tramway track construction material of iron or steel, the following : rails, check-rails and rack rails, switch blades, crossing frogs, point rods and other crossing pieces, sleepers \"cross-ties\", fish-plates, chairs, chair wedges, sole plates \"base plates\", rail clips, bedplates, ties and other material specialised for jointing or fixing rails",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730300",
+      "good": "Tubes, pipes and hollow profiles, of cast iron",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73041100",
+      "good": "Line pipe of a kind used for oil or gas pipelines, seamless, of stainless steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730419",
+      "good": "Line pipe of a kind used for oil or gas pipelines, seamless, of iron or steel (excl. products of stainless steel or of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73042200",
+      "good": "Drill pipe, seamless, of stainless steel, of a kind used in drilling for oil or gas",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73042300",
+      "good": "Drill pipe, seamless, of a kind used in drilling for oil or gas, of iron or steel (excl. products of stainless steel or of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73042400",
+      "good": "Casing and tubing, seamless, of a kind used for drilling for oil or gas, of stainless steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730429",
+      "good": "Casing and tubing, seamless, of iron or steel, of a kind used in drilling for oil or gas (excl. products of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730431",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of iron or non-alloy steel, cold-drawn or cold-rolled \"cold-reduced\" (excl. cast iron products and line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used for drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730439",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of iron or non-alloy steel, not cold-drawn or cold-rolled \"cold-reduced\" (excl. cast iron products, line pipe of a kind used for oil or gas pipelines, casing and tubing of a kind used for drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73044100",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of stainless steel, cold-drawn or cold-rolled \"cold-reduced\" (excl. line pipe of a kind used for oil or gas pipelines, casing and tubing of a kind used for drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730449",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of stainless steel, not cold-drawn or cold-rolled \"cold-reduced\" (excl. line pipe of a kind used for oil or gas pipelines or of a kind used for drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730451",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of alloy steel other than stainless, cold-drawn or cold-rolled \"cold-reduced\" (excl. line pipe of a kind used for oil or gas pipelines, casing and tubing of a kind used for drilling for oil)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730459",
+      "good": "Tubes, pipes and hollow profiles, seamless, of circular cross-section, of alloy steel other than stainless, not cold-drawn or cold-rolled \"cold-reduced\" (excl. line pipe of a kind used for oil or gas pipelines, casing and tubing of a kind used for drilling for oil)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73049000",
+      "good": "Tubes, pipes and hollow profiles, seamless, of non-circular cross-section, of iron or steel (excl. products of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7305",
+      "good": "Tubes and pipes, having circular cross-sections and an external diameter of > 406,4 mm, of flat-rolled products of iron or steel \"e.g., welded, riveted or similarly closed\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73061100",
+      "good": "Line pipe of a kind used for oil or gas pipelines, welded, of flat-rolled products of stainless steel, of an external diameter of <= 406,4 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73061900",
+      "good": "Line pipe of a kind used for oil or gas pipelines, welded, of flat-rolled products of iron or steel, of an external diameter of <= 406,4 mm (excl. products of stainless steel or of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73062100",
+      "good": "Casing and tubing of a kind used in drilling for oil or gas, welded, of flat-rolled products of stainless steel, of an external diameter of <= 406,4 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73062900",
+      "good": "Casing and tubing of a kind used in drilling for oil or gas, welded, of flat-rolled products of iron or steel, of an external diameter of <= 406,4 mm (excl. products of stainless steel or of cast iron)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063012",
+      "good": "Precision tubes, welded, of circular cross-section, of iron or non-alloy steel, cold-drawn or cold-rolled \"cold-reduced\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063018",
+      "good": "Precision tubes, welded, of circular cross-section, of iron or non-alloy steel (excl. cold-drawn or cold-rolled)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063041",
+      "good": "Threaded or threadable tubes \"gas pipe\", welded, of circular cross-section, of iron or non-alloy steel, plated or coated with zinc",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063049",
+      "good": "Threaded or threadable tubes \"gas pipe\", welded, of circular cross-section, of iron or non-alloy steel (excl. products plated or coated with zinc)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063072",
+      "good": "Other tubes, pipes and hollow profiles, welded, of circular cross-section, of iron or non-alloy steel, of an external diameter of <= 168,3 mm, plated or coated with zinc (excl. line pipe of a kind used for oil or gas pipelines or casing and tubingof a kind used in drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063077",
+      "good": "Other tubes, pipes and hollow profiles, welded, of circular cross-section, of iron or non-alloy steel of an external diameter of <= 168,3 mm (excl. plated or coated with zinc and line pipe of a kind used for oil or gas pipelines, casing and tubing of a kind used in drilling for oil or gas, precision tubes and threaded or threadable tubes \"gas pipe\")",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73063080",
+      "good": "Tubes, pipes and hollow profiles, welded, having a circular cross-section, of iron or steel, of an external diameter of > 168,3 mm but <= 406,4 mm (excl. line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas, or precision steel tubes, electrical conduit tubes or threaded or threadable tubes \"gas pipe\")",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73064020",
+      "good": "Tubes, pipes and hollow profiles, welded, of circular cross-section, of stainless steel, cold-drawn or cold-rolled \"cold-reduced\" (excl. products having internal and external circular cross-sections and an external diameter of > 406,4 mm, and line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73064080",
+      "good": "Tubes, pipes and hollow profiles, welded, of circular cross-section, of stainless steel (excl. products cold-drawn or cold-rolled \"cold-reduced\", tubes and pipes having internal and external circular cross-sections and an external diameter of > 406,4 mm, and line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73065021",
+      "good": "Precision steel tubes, welded, of circular cross-section, of alloy steel other than stainless, cold-drawn or cold-rolled \"cold-reduced\"",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73065029",
+      "good": "Precision steel tubes, welded, of circular cross-section, of alloy steel other than stainless (excl. cold-drawn or cold-rolled)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73065080",
+      "good": "Tubes, pipes and hollow profiles, welded, of circular cross-section, of alloy steel other than stainless (excl. tubes and pipes having internal and external circular cross-sections and an external diameter of > 406,4 mm, and line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas, and precision steel tubes)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73066110",
+      "good": "Tubes and pipes and hollow profiles, welded, of square or rectangular cross-section, of stainless steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73066192",
+      "good": "Tubes and pipes and hollow profiles, welded, of square or rectangular cross-section, of iron or steel other than stainless steel, with a wall thickness of <= 2 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73066199",
+      "good": "Tubes and pipes and hollow profiles, welded, of square or rectangular cross-section, of iron or steel other than stainless steel, with a wall thickness of > 2 mm",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73066910",
+      "good": "Tubes, pipes and hollow profiles, welded, of non-circular cross-section, of stainless steel (excl. tubes and pipes having internal and external circular cross-sections and an external diameter of > 406,4 mm, line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas, and tubes and pipes and hollow profiles of square or rectangular cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73066990",
+      "good": "Tubes, pipes and hollow profiles, welded, of non-circular cross-section, of iron or steel other than stainless steel (excl. tubes and pipes having internal and external circular cross-sections and an external diameter of > 406,4 mm, line pipe of a kind used for oil or gas pipelines or casing and tubing of a kind used in drilling for oil or gas, and tubes and pipes and hollow profiles of square or rectangular cross-section)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73069000",
+      "good": "Tubes, pipes and hollow profiles \"e.g., open seam, riveted or similarly closed\", of iron or steel (excl. of cast iron, seamless or welded tubes and pipes and tubes and pipes having internal and external circular cross-sections and an external diameter of > 406,4 mm)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730711",
+      "good": "Tube or pipe fittings of non-malleable cast iron",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73071910",
+      "good": "Tube or pipe fittings of cast iron (excl. of non-malleable)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73071990",
+      "good": "Cast tube or pipe fittings of steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73072100",
+      "good": "Flanges of stainless steel (excl. cast products)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730722",
+      "good": "Threaded elbows, bends and sleeves of stainless steel (excl. cast products)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730723",
+      "good": "Butt welding tube or pipe fittings of stainless steel (excl. cast products)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730729",
+      "good": "Tube or pipe fittings of stainless steel (excl. cast products, flanges, threaded elbows, bends and sleeves and butt weldings fittings)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73079100",
+      "good": "Flanges of iron or steel (excl. cast or stainless products)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730792",
+      "good": "Threaded elbows, bends and sleeves, of stainless steel (excl. cast or stainless products)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730793",
+      "good": "Butt welding fittings of iron or steel (excl. cast iron or stainless steel products, and flanges)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "730799",
+      "good": "Tube or pipe fittings, of iron or steel (excl. cast iron or stainless steel products; flanges; threaded elbows, bends and sleeves; butt welding fittings)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7308",
+      "good": "Structures and parts of structures \"e.g., bridges and bridge-sections, lock-gates, towers, lattice masts, roofs, roofing frameworks, doors and windows and their frames and thresholds for doors, shutters, balustrades, pillars and columns\", of iron or steel; plates, rods, angles, shapes, sections, tubes and the like, prepared for use in structures, of iron or steel (excl. prefabricated buildings of heading 9406)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7309",
+      "good": "Reservoirs, tanks, vats and similar containers, of iron or steel, for any material \"other than compressed or liquefied gas\", of a capacity of > 300 l, not fitted with mechanical or thermal equipment, whether or not lined or heat-insulated (excl. containers specifically constructed or equipped for one or more types of transport)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7310",
+      "good": "Tanks, casks, drums, cans, boxes and similar containers, of iron or steel, for any material \"other than compressed or liquefied gas\", of a capacity of <= 300 l, not fitted with mechanical or thermal equipment, whether or not lined or heat-insulated, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "731100",
+      "good": "Containers of iron or steel, for compressed or liquefied gas (excl. containers specifically constructed or equipped for one or more types of transport)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181100",
+      "good": "Coach screws of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181210",
+      "good": "Wood screws of stainless steel (excl. coach screws)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181290",
+      "good": "Wood screws of iron or steel other than stainless (excl. coach screws)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181300",
+      "good": "Screw hooks and screw rings, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181410",
+      "good": "Self-tapping screws, of stainless steel (excl. wood screws)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181491",
+      "good": "Spaced-thread screws of iron or steel other than stainless",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181499",
+      "good": "Self-tapping screws of iron or steel other than stainless (excl. spaced-thread screws and wood screws)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "731815",
+      "good": "Threaded screws and bolts, of iron or steel, whether or not with their nuts and washers (excl. coach screws and other wood screws, screw hooks and screw rings, self-tapping screws, lag screws, stoppers, plugs and the like, threaded)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "731816",
+      "good": "Nuts of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73181900",
+      "good": "Threaded articles, of iron or steel, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73182100",
+      "good": "Spring washers and other lock washers, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73182200",
+      "good": "Washers of iron or steel (excl. spring washers and other lock washers)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73182300",
+      "good": "Rivets of iron or steel (excl. tubular and bifurcated rivets for particular uses)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73182400",
+      "good": "Cotters and cotter pins, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73182900",
+      "good": "Non-threaded articles, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73261100",
+      "good": "Grinding balls and similar articles for mills, of iron or steel, forged or stamped, but not further worked",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "732619",
+      "good": "Articles of iron or steel, forged or stamped, but not further worked, n.e.s. (excl. grinding balls and similar articles for mills)",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73262000",
+      "good": "Articles of iron or steel wire, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269030",
+      "good": "Ladders and steps, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269040",
+      "good": "Pallets and similar platforms for handling goods, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269050",
+      "good": "Reels for cables, piping and the like, of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269060",
+      "good": "Ventilators, non-mechanical, guttering, hooks and like articles used in the building industry, n.e.s., of iron or steel",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269092",
+      "good": "Articles of iron or steel, open-die forged, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269094",
+      "good": "Articles of iron or steel, closed-die forged, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269096",
+      "good": "Sintered articles of iron or steel, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "73269098",
+      "good": "Articles of iron or steel, n.e.s.",
+      "sector": "iron-steel",
+      "inScope": true
+    },
+    {
+      "cnCode": "7601",
+      "good": "Unwrought aluminium",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7603",
+      "good": "Aluminium powders and flakes",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76041010",
+      "good": "Bars and rods",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76041090",
+      "good": "Profiles",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76042100",
+      "good": "Hollow profiles",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76042910",
+      "good": "Bars and rods",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76042990",
+      "good": "Profiles",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7605",
+      "good": "Aluminium wire",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7606",
+      "good": "Aluminium plates, sheets and strip, of a thickness exceeding 0,2 mm",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7607",
+      "good": "Aluminium foil (whether or not printed or backed with paper, paperboard, plastics or similar backing materials) of a thickness (excluding any backing) not exceeding 0,2 mm",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7608",
+      "good": "Aluminium tubes and pipes",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76090000",
+      "good": "Aluminium tube or pipe fittings (for example, couplings, elbows, sleeves)",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76101000",
+      "good": "Doors, windows and their frames and thresholds for doors",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "761090",
+      "good": "Other",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76109010",
+      "good": "Bridges and bridge-sections, towers and lattice masts",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76109090",
+      "good": "Other",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76110000",
+      "good": "Aluminium reservoirs, tanks, vats and similar containers, for any material (other than compressed or liquefied gas), of a capacity exceeding 300 litres, whether or not lined or heat-insulated, but not fitted with mechanical or thermal equipment",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7612",
+      "good": "Aluminium casks, drums, cans, boxes and similar containers (including rigid or collapsible tubular containers), for any material (other than compressed or liquefied gas), of a capacity not exceeding 300 litres, whether or not lined or heat-insulated, but not fitted with mechanical or thermal equipment",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76130000",
+      "good": "Aluminium containers for compressed or liquefied gas",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "7614",
+      "good": "Stranded wire, cables, plaited bands and the like, of aluminium, not electrically insulated",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76161000",
+      "good": "Nails, tacks, staples (other than those of heading 8305), screws, bolts, nuts, screw hooks, rivets, cotters, cotter pins, washers and similar articles",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76169100",
+      "good": "Cloth, grill, netting and fencing, of aluminium wire",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76169910",
+      "good": "Cast",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "76169990",
+      "good": "Other",
+      "sector": "aluminium",
+      "inScope": true
+    },
+    {
+      "cnCode": "27160000",
+      "good": "Electrical energy",
+      "sector": "electricity",
+      "inScope": true
+    }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "importYear": 2026,
   "lines": [
-    { "lineId": "L1", "cnCode": "72071110", "originCountry": "IN", "tonnes": 120 },
-    { "lineId": "L2", "cnCode": "76011000", "originCountry": "CN", "tonnes": 80 },
+    { "lineId": "L1", "cnCode": "72071111", "originCountry": "CN", "tonnes": 120 },
+    { "lineId": "L2", "cnCode": "7601", "originCountry": "IN", "tonnes": 80 },
     { "lineId": "L3", "cnCode": "25232900", "originCountry": "TR", "tonnes": 30 }
   ]
 }

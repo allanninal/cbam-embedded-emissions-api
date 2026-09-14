@@ -61,8 +61,9 @@ under the **`/cbam`** path prefix and isolates its Redis keys with the **`cbam:r
 **`cbam:gw:`** (gateway) prefixes, so it drops onto the same server next to EUDR (`/eudr`) and C2PA
 (`/c2pa`) with zero collision. See [DEPLOY.md](./DEPLOY.md).
 
-Data sources (all free, Commission-published): CBAM default embedded-emission values, CN-code
-tables, country adjustment factors, and the public EU ETS carbon price.
+Data sources (all free, Commission-published): CBAM **default embedded-emission values loaded from
+the official Commission workbook** (Implementing Regulation (EU) 2025/2621, per-country and
+per-CN-code), CN-code tables, country adjustment factors, and the public EU ETS carbon price.
 
 ## Endpoints
 

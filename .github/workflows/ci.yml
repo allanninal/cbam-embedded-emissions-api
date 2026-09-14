@@ -62,7 +62,7 @@ jobs:
         run: |
           body=$(curl -fsS -X POST http://127.0.0.1:8792/v1/calculate \
             -H "content-type: application/json" \
-            -d '{"cnCode":"72071110","originCountry":"IN","tonnes":120}')
+            -d '{"cnCode":"72071111","originCountry":"CN","tonnes":120}')
           echo "$body"
           echo "$body" | grep -q '"certificatesOwed"'
           echo "$body" | grep -q '"auditTrail"'
@@ -70,7 +70,7 @@ jobs:
       - name: Smoke — below-de-minimis and out-of-scope
         run: |
           curl -fsS -X POST http://127.0.0.1:8792/v1/calculate -H "content-type: application/json" \
-            -d '{"cnCode":"72071110","originCountry":"IN","tonnes":10}' | grep -q '"below-de-minimis"'
+            -d '{"cnCode":"72071111","originCountry":"CN","tonnes":10}' | grep -q '"below-de-minimis"'
           curl -fsS -X POST http://127.0.0.1:8792/v1/calculate -H "content-type: application/json" \
             -d '{"cnCode":"99999999","originCountry":"IN","tonnes":100}' | grep -q '"out-of-scope"'
 

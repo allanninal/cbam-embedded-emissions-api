@@ -1,222 +1,240 @@
 /**
- * Import the Commission's official CBAM default-value table into
+ * Import the Commission's official CBAM default-value workbook into
  * data/default-values.json.
  *
  * WHY THIS EXISTS
  * ---------------
- * The legally binding definitive-period default values live in Commission
- * Implementing Regulation (EU) 2025/2621 (corrected by (EU) 2026/1740), and the
- * Commission publishes a companion spreadsheet ("Default values definitive
- * period", XLSX) for information. Hand-transcribing ~600 KB of values is
- * error-prone; this script ingests the authoritative export directly so the
- * numbers in data/default-values.json come from the source, not from typing.
+ * The legally binding definitive-period default values are in Commission
+ * Implementing Regulation (EU) 2025/2621 (corrected by (EU) 2026/1740). The
+ * Commission publishes the same values as an XLSX ("Default values definitive
+ * period" / "DV correcting act") with ONE SHEET PER COUNTRY plus an
+ * "_Other Countries and Territories" fallback sheet. Each sheet lists, per CN /
+ * TARIC code: direct, indirect and TOTAL default emissions (tCO2e per tonne).
  *
- * INPUT FORMATS
- * -------------
- * To stay dependency-light (the `$0` stack), the script reads a CSV by default —
- * export the Commission XLSX sheet to CSV (or use the CSV the build pipeline
- * produces) — and needs NO external packages. If you point it at an .xlsx file it
- * will try to use the optional `xlsx` package if installed, otherwise it prints a
- * clear instruction to convert to CSV first.
- *
- * Expected columns (case-insensitive; configurable via --map):
- *   cnCode | good | sector | country | value
- * - `country` is optional/blank for the good-level fallback (rest-of-world /
- *   top-10-highest-emitters average); a country value (ISO2 or name) becomes a
- *   `byCountry` entry.
- * - Multiple rows for the same good are merged: the blank-country row sets
- *   `factor`; country rows populate `byCountry`.
+ * This script parses that workbook directly (no third-party deps — it uses the
+ * system `unzip` to open the .xlsx zip, then reads the XML) and produces a
+ * CN-code-keyed default-values.json where:
+ *   - `factor` (good-level fallback) = the "_Other Countries and Territories" total
+ *   - `byCountry` = per-country total for every country sheet that lists the code
  *
  * USAGE
  * -----
- *   node scripts/import-default-values.mjs <input.csv|input.xlsx> \
- *     [--version dv-2026.2] [--out data/default-values.json] [--dry-run]
- *     [--map cnCode=CN_CODE,good=Goods,sector=Sector,country=Country,value=DefaultValue]
+ *   node scripts/import-default-values.mjs <workbook.xlsx> \
+ *     [--version dv-2026.3] [--out data/default-values.json] [--emissions total|direct]
+ *     [--dry-run]
  *
- * The output conforms to schemas/default-value.schema.json; run `npm run validate`
- * afterwards (the build gate will reject anything malformed), then bump
- * meta.datasetVersions.defaultValues to match --version.
+ * Download the workbook from:
+ *   https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-legislation-and-guidance_en
+ * (link "Default values definitive period" / "DV correcting act ... .xlsx").
+ *
+ * After import, bump meta.datasetVersions.defaultValues to --version and run
+ * `npm run validate` (the build gate rejects anything malformed).
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
-const SECTORS = ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"];
+const COUNTRY_TO_ISO2 = {
+  "albania": "AL", "algeria": "DZ", "angola": "AO", "argentina": "AR", "armenia": "AM",
+  "australia": "AU", "azerbaijan": "AZ", "bangladesh": "BD", "bahrain": "BH", "belarus": "BY",
+  "benin": "BJ", "bolivia": "BO", "bosnia and herzegovina": "BA", "brazil": "BR", "brunei": "BN",
+  "cambodia": "KH", "cameroon": "CM", "canada": "CA", "chile": "CL", "china": "CN",
+  "colombia": "CO", "congo": "CG", "congo, democratic republic of": "CD", "costa rica": "CR",
+  "cuba": "CU", "curaçao": "CW", "dominican republic": "DO", "ecuador": "EC", "egypt": "EG",
+  "el salvador": "SV", "equatorial guinea": "GQ", "eritrea": "ER", "eswatini": "SZ",
+  "ethiopia": "ET", "gabon": "GA", "georgia": "GE", "ghana": "GH", "guatemala": "GT",
+  "haiti": "HT", "honduras": "HN", "hong kong": "HK", "india": "IN", "indonesia": "ID",
+  "iran, islamic republic of": "IR", "iraq": "IQ", "israel": "IL", "ivory coast": "CI",
+  "jamaica": "JM", "japan": "JP", "jordan": "JO", "kazakhstan": "KZ", "kenya": "KE",
+  "korea, republic of (south korea": "KR", "kuwait": "KW", "kyrgyzstan": "KG", "laos": "LA",
+  "lebanon": "LB", "liberia": "LR", "libya": "LY", "madagascar": "MG", "malaysia": "MY",
+  "mali": "ML", "mauritania": "MR", "mauritius": "MU", "mexico": "MX", "moldova, republic of": "MD",
+  "mongolia": "MN", "montenegro": "ME", "morocco": "MA", "mozambique": "MZ", "myanmar": "MM",
+  "namibia": "NA", "nepal": "NP", "new caledonia and dependencies": "NC", "new zealand": "NZ",
+  "nicaragua": "NI", "niger": "NE", "nigeria": "NG", "north korea (democratic people’": "KP",
+  "north macedonia": "MK", "oman": "OM", "pakistan": "PK", "panama": "PA", "papua new guinea": "PG",
+  "paraguay": "PY", "peru": "PE", "philippines": "PH", "qatar": "QA", "russian federation": "RU",
+  "rwanda": "RW", "saudi arabia": "SA", "senegal": "SN", "serbia": "RS", "sierra leone": "SL",
+  "singapore": "SG", "south africa": "ZA", "sri lanka": "LK", "sudan": "SD", "suriname": "SR",
+  "syria": "SY", "taiwan": "TW", "tajikistan": "TJ", "tanzania, united republic of": "TZ",
+  "thailand": "TH", "togo": "TG", "trinidad and tobago": "TT", "tunisia": "TN", "türkiye": "TR",
+  "turkmenistan": "TM", "uganda": "UG", "ukraine": "UA", "united arab emirates": "AE",
+  "united kingdom": "GB", "united states": "US", "uruguay": "UY", "uzbekistan": "UZ",
+  "venezuela": "VE", "viet nam": "VN", "yemen": "YE", "zambia": "ZM", "zimbabwe": "ZW"
+};
 
-// ISO2 helpers so a "country" column may be a code or a common name.
-const NAME_TO_ISO2 = {
-  "china": "CN", "india": "IN", "turkey": "TR", "türkiye": "TR", "russia": "RU",
-  "ukraine": "UA", "united kingdom": "GB", "uk": "GB", "united states": "US",
-  "usa": "US", "south korea": "KR", "korea": "KR", "brazil": "BR", "norway": "NO",
-  "iceland": "IS", "liechtenstein": "LI", "switzerland": "CH"
+const SECTOR_HEADERS = {
+  "cement": "cement", "fertilisers": "fertilisers", "fertilizers": "fertilisers",
+  "iron and steel": "iron-steel", "iron & steel": "iron-steel", "aluminium": "aluminium",
+  "hydrogen": "hydrogen", "electricity": "electricity"
 };
 
 function parseArgs(argv) {
-  const args = { _: [], map: {}, out: "data/default-values.json", version: null, dryRun: false };
+  const args = { _: [], out: "data/default-values.json", version: null, dryRun: false, emissions: "total" };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") args.dryRun = true;
     else if (a === "--out") args.out = argv[++i];
     else if (a === "--version") args.version = argv[++i];
-    else if (a === "--map") {
-      for (const pair of argv[++i].split(",")) {
-        const [k, v] = pair.split("=");
-        if (k && v) args.map[k.trim()] = v.trim();
-      }
-    } else args._.push(a);
+    else if (a === "--emissions") args.emissions = argv[++i];
+    else args._.push(a);
   }
   return args;
 }
 
-/** Minimal, dependency-free CSV parser (handles quotes, commas, CRLF). */
-function parseCsv(text) {
-  const rows = [];
-  let row = [], field = "", inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false;
-      } else field += c;
-    } else if (c === '"') inQuotes = true;
-    else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-    else if (c === "\r") { /* ignore */ }
-    else field += c;
+const decode = (s) => String(s || "")
+  .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+  .replace(/&#10;/g, " ").replace(/&#9;/g, " ").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+
+function readSharedStrings(dir) {
+  const p = path.join(dir, "xl", "sharedStrings.xml");
+  if (!existsSync(p)) return [];
+  const xml = readFileSync(p, "utf8");
+  return [...xml.matchAll(/<si>(.*?)<\/si>/gs)].map((m) =>
+    decode([...m[1].matchAll(/<t[^>]*>(.*?)<\/t>/gs)].map((x) => x[1]).join("")));
+}
+
+function readCells(file, strings) {
+  const xml = readFileSync(file, "utf8");
+  const out = {};
+  for (const c of xml.matchAll(/<c r="([A-Z]+)(\d+)"(?:[^>]*t="([^"]*)")?[^>]*>(?:<v>(.*?)<\/v>)?/g)) {
+    if (c[4] == null) continue;
+    const val = c[3] === "s" ? strings[+c[4]] : c[4];
+    (out[+c[2]] = out[+c[2]] || {})[c[1]] = val;
   }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
-  return rows.filter((r) => r.some((c) => c.trim() !== ""));
+  return out;
 }
 
-async function readTable(inputPath) {
-  const ext = path.extname(inputPath).toLowerCase();
-  if (ext === ".csv") return parseCsv(readFileSync(inputPath, "utf8"));
-  if (ext === ".xlsx" || ext === ".xls") {
-    let xlsx;
-    try { xlsx = (await import("xlsx")).default ?? (await import("xlsx")); }
-    catch {
-      throw new Error(
-        `Reading ${ext} needs the optional 'xlsx' package. Either run\n` +
-        `  npm i -D xlsx\n` +
-        `or export the sheet to CSV and pass the .csv file instead.`
-      );
-    }
-    const wb = xlsx.readFile(inputPath);
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    return xlsx.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
+/** Map sheet display name -> worksheet file path via workbook + rels. */
+function sheetFileMap(dir) {
+  const wb = readFileSync(path.join(dir, "xl", "workbook.xml"), "utf8");
+  const rels = readFileSync(path.join(dir, "xl", "_rels", "workbook.xml.rels"), "utf8");
+  const relMap = {};
+  for (const m of rels.matchAll(/<Relationship [^>]*Id="([^"]*)"[^>]*Target="([^"]*)"/g)) relMap[m[1]] = m[2];
+  const map = [];
+  for (const m of wb.matchAll(/<sheet [^>]*name="([^"]*)"[^>]*r:id="([^"]*)"/g)) {
+    const target = relMap[m[2]];
+    if (target) map.push({ name: decode(m[1]), file: path.join(dir, "xl", target.replace(/^\//, "").replace(/^xl\//, "xl/")) });
   }
-  throw new Error(`Unsupported input extension: ${ext} (use .csv or .xlsx)`);
+  return map;
 }
 
-function normHeader(h) { return String(h || "").trim().toLowerCase(); }
+const num = (raw) => {
+  if (raw == null) return null;
+  const s = String(raw).trim().replace(/\u00a0/g, "").replace(",", ".");
+  if (!/^[0-9]*\.?[0-9]+$/.test(s)) return null;
+  return Number(s);
+};
+const normCn = (raw) => String(raw || "").replace(/[^0-9]/g, "");
 
-function resolveColumns(header, map) {
-  const idx = {};
-  const want = { cnCode: ["cncode", "cn code", "cn"], good: ["good", "goods", "product"],
-    sector: ["sector", "aggregated goods category", "category"],
-    country: ["country", "country of origin", "origin"],
-    value: ["value", "defaultvalue", "default value", "specific embedded emissions", "see"] };
-  header.forEach((h, i) => {
-    const n = normHeader(h);
-    for (const key of Object.keys(want)) {
-      if (map[key] && normHeader(map[key]) === n) idx[key] = i;
-      else if (idx[key] == null && want[key].includes(n)) idx[key] = i;
-    }
-  });
-  return idx;
+/** Parse one country/fallback sheet into { cnCode -> { good, sector, value } }. */
+function parseSheet(cells, emissionsCol) {
+  const rows = Object.keys(cells).map(Number).sort((a, b) => a - b);
+  const result = {};
+  let sector = null;
+  for (const r of rows) {
+    const row = cells[r];
+    const a = (row.A || "").trim();
+    if (!a) continue;
+    const lower = a.toLowerCase();
+    if (SECTOR_HEADERS[lower]) { sector = SECTOR_HEADERS[lower]; continue; }
+    if (lower.startsWith("product cn code") || lower.startsWith("other countries") ||
+        /^[a-z ,()'’]+$/i.test(a) && !/[0-9]/.test(a) && a.length < 40 && !sector) continue;
+    const cn = normCn(a);
+    if (cn.length < 4) continue; // not a CN-code row (heading = 4 digits min)
+    const value = num(row[emissionsCol]);
+    if (value == null) continue; // "see below" group headers, etc.
+    result[cn] = { good: decode(row.B || "").trim() || a, sector, value, code: cn };
+  }
+  return result;
 }
 
-function toSector(raw) {
-  const n = normHeader(raw).replace(/\s+/g, "-");
-  if (SECTORS.includes(n)) return n;
-  if (/steel|iron/.test(n)) return "iron-steel";
-  if (/alumin/.test(n)) return "aluminium";
-  if (/cement/.test(n)) return "cement";
-  if (/fertil/.test(n)) return "fertilisers";
-  if (/hydrogen/.test(n)) return "hydrogen";
-  if (/electric/.test(n)) return "electricity";
-  return null;
-}
-
-function toIso2(raw) {
-  const s = String(raw || "").trim();
-  if (!s) return null;
-  if (/^[A-Za-z]{2}$/.test(s)) return s.toUpperCase();
-  return NAME_TO_ISO2[s.toLowerCase()] || null;
-}
-
-async function main() {
+function main() {
   const args = parseArgs(process.argv.slice(2));
   const input = args._[0];
-  if (!input) {
-    console.error("Usage: node scripts/import-default-values.mjs <input.csv|input.xlsx> [--version dv-2026.2] [--out ...] [--dry-run] [--map ...]");
-    process.exit(2);
-  }
+  if (!input) { console.error("Usage: node scripts/import-default-values.mjs <workbook.xlsx> [--version dv-2026.3] [--emissions total|direct] [--out ...] [--dry-run]"); process.exit(2); }
   if (!existsSync(input)) { console.error(`Input not found: ${input}`); process.exit(2); }
+  const emissionsCol = args.emissions === "direct" ? "C" : "E"; // C=direct, E=total
 
-  const table = await readTable(input);
-  if (table.length < 2) { console.error("Input has no data rows."); process.exit(1); }
+  const work = mkdtempSync(path.join(tmpdir(), "cbam-dv-"));
+  try {
+    execFileSync("unzip", ["-o", "-q", path.resolve(input), "-d", work]);
+    const strings = readSharedStrings(work);
+    const sheets = sheetFileMap(work);
 
-  const idx = resolveColumns(table[0], args.map);
-  for (const req of ["good", "sector", "value"]) {
-    if (idx[req] == null) {
-      console.error(`Could not find a '${req}' column. Headers seen: ${table[0].join(" | ")}\n` +
-        `Use --map to point at the right columns, e.g. --map good=Goods,sector=Category,value=DefaultValue`);
-      process.exit(1);
+    // Fallback sheet first (good-level factor), then each country.
+    const fallbackSheet = sheets.find((s) => /other countries/i.test(s.name));
+    if (!fallbackSheet) { console.error("Could not find the '_Other Countries and Territories' fallback sheet."); process.exit(1); }
+    const fallback = parseSheet(readCells(fallbackSheet.file, strings), emissionsCol);
+
+    // Build the CN-keyed value map. Use the 8-digit CN as the calculator key
+    // (declarations carry the CN subheading); collapse 10-digit TARIC rows onto
+    // their 8-digit parent, keeping the first (or the more specific if unique).
+    const byCn = new Map(); // code -> { good, sector, factor, byCountry }
+    const put = (code, good, sector, country, value) => {
+      let e = byCn.get(code);
+      if (!e) { e = { good, sector, factor: null, byCountry: {} }; byCn.set(code, e); }
+      if (!e.good && good) e.good = good;
+      if (!e.sector && sector) e.sector = sector;
+      if (country === null) { if (e.factor == null) e.factor = value; }
+      else { if (e.byCountry[country] == null) e.byCountry[country] = value; }
+    };
+    for (const v of Object.values(fallback)) put(v.code, v.good, v.sector, null, v.value);
+
+    let countrySheets = 0;
+    for (const s of sheets) {
+      if (["Overview", "Version History", "Annex IV"].includes(s.name)) continue;
+      if (/other countries/i.test(s.name)) continue;
+      const iso2 = COUNTRY_TO_ISO2[s.name.toLowerCase()];
+      if (!iso2) continue; // skip anything we can't map to ISO2
+      countrySheets++;
+      const parsed = parseSheet(readCells(s.file, strings), emissionsCol);
+      for (const v of Object.values(parsed)) put(v.code, v.good, v.sector, iso2, v.value);
     }
-  }
 
-  const byGood = new Map(); // good -> { good, sector, factor, byCountry, unit }
-  let rowsIn = 0, skipped = 0;
-  for (let r = 1; r < table.length; r++) {
-    const row = table[r];
-    const good = String(row[idx.good] ?? "").trim();
-    const sector = toSector(row[idx.sector]);
-    const valueRaw = String(row[idx.value] ?? "").replace(",", ".").trim();
-    const value = Number(valueRaw);
-    if (!good || !sector || !(value >= 0) || Number.isNaN(value)) { skipped++; continue; }
-    rowsIn++;
-    const entry = byGood.get(good) || { good, sector, factor: null, unit: "tCO2e/t", byCountry: {} };
-    const iso2 = idx.country != null ? toIso2(row[idx.country]) : null;
-    if (iso2) entry.byCountry[iso2] = value;
-    else entry.factor = value; // blank-country row = good-level fallback
-    byGood.set(good, entry);
-  }
-
-  // Any good that only had country rows: fall back to the max country value so a
-  // fallback always exists (documented; reconcile if the source defines otherwise).
-  const values = [];
-  for (const e of byGood.values()) {
-    if (e.factor == null) {
-      const vals = Object.values(e.byCountry);
-      e.factor = vals.length ? Math.max(...vals) : null;
+    const values = [];
+    for (const [code, e] of byCn) {
+      if (e.factor == null) {
+        const vals = Object.values(e.byCountry);
+        e.factor = vals.length ? Math.max(...vals) : null; // fallback if no _Other row
+      }
+      if (e.factor == null || !e.sector) continue;
+      const out = { cnCode: code, good: e.good, sector: e.sector, factor: round3(e.factor), unit: "tCO2e/t" };
+      if (Object.keys(e.byCountry).length) {
+        out.byCountry = Object.fromEntries(Object.entries(e.byCountry).map(([k, v]) => [k, round3(v)]));
+      }
+      values.push(out);
     }
-    const out = { good: e.good, sector: e.sector, factor: e.factor, unit: e.unit };
-    if (Object.keys(e.byCountry).length) out.byCountry = e.byCountry;
-    values.push(out);
-  }
+    values.sort((a, b) => a.cnCode.localeCompare(b.cnCode));
 
-  const version = args.version || `dv-import-${new Date().toISOString().slice(0, 10)}`;
-  const doc = {
-    version,
-    source: "Commission Implementing Regulation (EU) 2025/2621 (imported from official default-value spreadsheet)",
-    sourceUrl: "https://eur-lex.europa.eu/eli/reg_impl/2025/2621/oj",
-    effectiveDate: "2026-01-01",
-    note: `Imported by scripts/import-default-values.mjs from ${path.basename(input)} on ${new Date().toISOString()}. Verify against the binding Regulation/Excel before production use.`,
-    values
-  };
+    const version = args.version || `dv-import-${new Date().toISOString().slice(0, 10)}`;
+    const doc = {
+      version,
+      source: "Commission Implementing Regulation (EU) 2025/2621 (imported from the official default-value workbook, corrected act update)",
+      sourceUrl: "https://eur-lex.europa.eu/eli/reg_impl/2025/2621/oj",
+      effectiveDate: "2026-01-01",
+      emissionsBasis: args.emissions === "direct" ? "direct" : "total (direct + indirect)",
+      keyedBy: "cnCode",
+      note: `Imported by scripts/import-default-values.mjs from ${path.basename(input)} on ${new Date().toISOString()}. factor = "_Other Countries and Territories" fallback; byCountry = per-country values. Values are the ${args.emissions === "direct" ? "direct" : "total"} default emissions (tCO2e/t) from the Commission workbook.`,
+      values
+    };
 
-  console.log(`Parsed ${rowsIn} value rows (${skipped} skipped) → ${values.length} goods, version ${version}.`);
-  if (args.dryRun) {
-    console.log(JSON.stringify(doc, null, 2).slice(0, 2000) + "\n... (--dry-run, not written)");
-    return;
+    console.log(`Parsed ${countrySheets} country sheets + fallback → ${values.length} CN codes.`);
+    if (args.dryRun) { console.log(JSON.stringify(doc.values.slice(0, 6), null, 2)); console.log(`... (--dry-run; ${values.length} total, not written)`); return; }
+    const outPath = path.isAbsolute(args.out) ? args.out : path.join(root, args.out);
+    writeFileSync(outPath, JSON.stringify(doc, null, 2) + "\n");
+    console.log(`Wrote ${path.relative(root, outPath)} (${values.length} CN codes, version ${version}).`);
+    console.log(`Next: bump meta.datasetVersions.defaultValues to "${version}" and run 'npm run validate'.`);
+  } finally {
+    rmSync(work, { recursive: true, force: true });
   }
-  const outPath = path.isAbsolute(args.out) ? args.out : path.join(root, args.out);
-  writeFileSync(outPath, JSON.stringify(doc, null, 2) + "\n");
-  console.log(`Wrote ${path.relative(root, outPath)}. Next: bump meta.datasetVersions.defaultValues to "${version}" and run 'npm run validate'.`);
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+function round3(n) { return Math.round(n * 1000) / 1000; }
+
+main();

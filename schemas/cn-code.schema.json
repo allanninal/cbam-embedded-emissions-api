@@ -20,7 +20,7 @@
         "additionalProperties": false,
         "required": ["cnCode", "good", "sector", "inScope"],
         "properties": {
-          "cnCode": { "type": "string", "pattern": "^[0-9]{6,10}$" },
+          "cnCode": { "type": "string", "pattern": "^[0-9]{4,10}$" },
           "good": { "type": "string" },
           "sector": {
             "type": "string",

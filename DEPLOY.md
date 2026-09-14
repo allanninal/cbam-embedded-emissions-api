@@ -114,26 +114,25 @@ only AFTER DNS resolves, or the ACME challenge will fail.
   a dataset upgrade is a deliberate data edit surfaced in `meta.json` and every calculation's
   `datasetVersions`.
 
-## Reference-data caveat
+## Reference-data note
 
-The shipped `data/default-values.json`, `data/cn-codes.json`, and `data/country-factors.json`
-contain a representative subset with **illustrative default values** so the calculator is runnable
-end-to-end. The **legally binding** definitive-period default values are those in **Commission
-Implementing Regulation (EU) 2025/2621** (corrected by (EU) 2026/1740); the Commission also
-publishes a companion **Excel** for information.
-
-To load the real binding values, use the importer:
+`data/default-values.json` and `data/cn-codes.json` are **imported directly from the Commission's
+official default-value workbook** (Implementing Regulation (EU) 2025/2621, corrected act update) —
+260 CN codes with per-country values across all six sectors, keyed by CN code with an
+`_Other Countries` good-level fallback. To refresh them when the Commission republishes:
 
 ```bash
-# export the Commission "Default values definitive period" sheet to CSV, then:
-npm run import-default-values -- path/to/default-values.csv --version dv-2026.2
-#   (accepts .xlsx too if the optional `xlsx` package is installed)
-# then bump meta.datasetVersions.defaultValues to match, and:
+# download the "Default values definitive period" / "DV correcting act" .xlsx from:
+#   https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-legislation-and-guidance_en
+npm run import-default-values -- path/to/DV-workbook.xlsx --version dv-2026.4
+# regenerate cn-codes from the same source alignment if needed, then:
 npm run validate
 ```
 
-The importer merges a good-level fallback (blank-country rows) with per-country overrides
-(`byCountry`), matching the calculator's model. Also review:
+The importer uses the workbook's **total** emissions (direct + indirect) by default; pass
+`--emissions direct` for direct-only. The engine resolves a submitted CN code to the most specific
+published entry by longest-prefix match, prefers a country-specific value over the `_Other
+Countries` fallback, and then applies the year-based mark-up. Also review:
 - the **CN-code scope** (`data/cn-codes.json`) — covers all six sectors' Annex I headings
   (iron & steel chapter 72 + 7301–7311/7318/7326 + 2601 12; aluminium 7601/7603–7614/7616;
   cement 2507 00 80 + 2523; fertilisers 2808/2814/2834 21/3102/3105; hydrogen 2804 10;

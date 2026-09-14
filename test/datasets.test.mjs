@@ -13,11 +13,14 @@ test("loadDatasets loads the shipped reference data with versions", () => {
   assert.equal(ds.versions.markups, ds.markups.version);
 });
 
-test("every in-scope shipped CN code has a matching default value", () => {
+test("every in-scope shipped CN code resolves to a default value (except electricity)", () => {
   const ds = loadDatasets();
-  const goods = new Set(ds.defaultValues.values.map((v) => v.good));
+  const dvCodes = ds.defaultValues.values.map((v) => String(v.cnCode).replace(/[^0-9]/g, ""));
+  const resolves = (cn) => dvCodes.some((k) => cn.startsWith(k) || k.startsWith(cn));
   for (const c of ds.cnCodes.codes) {
-    if (c.inScope) assert.ok(goods.has(c.good), `missing default value for ${c.good}`);
+    if (!c.inScope || c.sector === "electricity") continue;
+    const cn = String(c.cnCode).replace(/[^0-9]/g, "");
+    assert.ok(resolves(cn), `no default value resolves for CN ${c.cnCode}`);
   }
 });
 

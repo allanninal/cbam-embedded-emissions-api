@@ -14,9 +14,10 @@ export const fixtureDatasets = {
   defaultValues: {
     version: "dv-test.1",
     source: "test",
+    keyedBy: "cnCode",
     values: [
-      { good: "Steel semi", sector: "iron-steel", factor: 2.0, unit: "tCO2e/t", byCountry: { CN: 2.5 } },
-      { good: "Aluminium unwrought", sector: "aluminium", factor: 7.0, unit: "tCO2e/t" }
+      { cnCode: "72071110", good: "Steel semi", sector: "iron-steel", factor: 2.0, unit: "tCO2e/t", byCountry: { CN: 2.5 } },
+      { cnCode: "76011000", good: "Aluminium unwrought", sector: "aluminium", factor: 7.0, unit: "tCO2e/t" }
     ]
   },
   countryFactors: {

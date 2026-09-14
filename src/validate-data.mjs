@@ -82,11 +82,17 @@ if (sectors) {
   }
 }
 if (cnCodes && defaultValues) {
-  const goods = new Set(defaultValues.values.map((v) => v.good));
+  // default-values is keyed by CN code (binding-workbook granularity). Check that
+  // every in-scope CN code resolves to a default value via longest-prefix match,
+  // except electricity (priced per MWh, no per-tonne default value).
+  const dvCodes = defaultValues.values
+    .filter((v) => v.cnCode != null)
+    .map((v) => String(v.cnCode).replace(/[^0-9]/g, ""));
+  const resolves = (cn) => dvCodes.some((k) => cn.startsWith(k) || k.startsWith(cn));
   for (const c of cnCodes.codes) {
-    if (c.inScope && !goods.has(c.good)) {
-      fail(`cn-codes.json: good "${c.good}" (${c.cnCode}) has no matching default value`);
-    }
+    if (!c.inScope || c.sector === "electricity") continue;
+    const cn = String(c.cnCode).replace(/[^0-9]/g, "");
+    if (!resolves(cn)) fail(`cn-codes.json: CN ${c.cnCode} (${c.good}) resolves to no default value`);
   }
 }
 if (meta && cnCodes && defaultValues && countryFactors) {

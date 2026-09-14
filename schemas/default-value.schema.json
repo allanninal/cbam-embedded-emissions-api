@@ -10,14 +10,17 @@
     "source": { "type": "string" },
     "sourceUrl": { "type": "string" },
     "effectiveDate": { "type": "string", "format": "date" },
+    "emissionsBasis": { "type": "string" },
+    "keyedBy": { "type": "string" },
     "note": { "type": "string" },
     "values": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["good", "sector", "factor", "unit"],
+        "required": ["cnCode", "good", "sector", "factor", "unit"],
         "properties": {
+          "cnCode": { "type": "string", "pattern": "^[0-9]{4,10}$" },
           "good": { "type": "string" },
           "sector": {
             "type": "string",
@@ -26,12 +29,12 @@
           "factor": {
             "type": "number",
             "minimum": 0,
-            "description": "Fallback default embedded-emission value for the good (tCO2e/t), used when no country-specific value applies. Corresponds to the rest-of-world / top-10-highest-emitters average in the binding methodology."
+            "description": "Good-level fallback default emissions (tCO2e/t) — the '_Other Countries and Territories' value in the binding workbook, used when no country-specific value applies."
           },
           "unit": { "type": "string", "const": "tCO2e/t" },
           "byCountry": {
             "type": "object",
-            "description": "Optional country-specific default values, keyed by ISO 3166-1 alpha-2 code. Overrides `factor` when the origin country matches.",
+            "description": "Country-specific default values keyed by ISO 3166-1 alpha-2 code; overrides `factor` for that origin.",
             "additionalProperties": { "type": "number", "minimum": 0 }
           },
           "note": { "type": "string" }

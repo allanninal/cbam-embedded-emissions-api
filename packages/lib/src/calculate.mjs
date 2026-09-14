@@ -32,6 +32,52 @@ function round2(n) {
 }
 
 /**
+ * Look up a default-value entry for a CN code. The values dataset is keyed by CN
+ * code (matching the binding Commission workbook); we resolve by LONGEST-PREFIX
+ * match so a submitted subheading (e.g. 72071110) maps to the most specific
+ * published code (e.g. 7207111 / 720711 / 7207). If no CN entry matches, fall
+ * back to matching a legacy good-keyed entry by good name.
+ */
+/**
+ * Resolve a submitted CN code to a CBAM CN-mapping entry by longest-prefix match
+ * (same strategy as lookupDefaultValue): prefer an entry whose code is a prefix of
+ * the submitted code (covers it), else the closest more-specific published code.
+ */
+export function lookupCnMapping(codes, cnCode) {
+  const cn = String(cnCode || "").replace(/[^0-9]/g, "");
+  if (!cn) return null;
+  let covering = null, coveringLen = -1, broader = null, broaderLen = Infinity;
+  for (const c of codes) {
+    const key = String(c.cnCode || "").replace(/[^0-9]/g, "");
+    if (!key) continue;
+    if (cn.startsWith(key)) { if (key.length > coveringLen) { covering = c; coveringLen = key.length; } }
+    else if (key.startsWith(cn)) { if (key.length < broaderLen) { broader = c; broaderLen = key.length; } }
+  }
+  return covering || broader || null;
+}
+
+export function lookupDefaultValue(values, cnCode, goodName) {
+  const cn = String(cnCode || "").replace(/[^0-9]/g, "");
+  let covering = null;    // published key is a prefix of the submitted code (entry covers it)
+  let coveringLen = -1;
+  let broader = null;     // submitted code is a prefix of a more specific published key
+  let broaderLen = Infinity;
+  for (const v of values) {
+    if (v.cnCode == null) continue;
+    const key = String(v.cnCode).replace(/[^0-9]/g, "");
+    if (cn && cn.startsWith(key)) {
+      if (key.length > coveringLen) { covering = v; coveringLen = key.length; }
+    } else if (cn && key.startsWith(cn)) {
+      if (key.length < broaderLen) { broader = v; broaderLen = key.length; }
+    }
+  }
+  if (covering) return covering;   // most specific entry at or above the submitted code
+  if (broader) return broader;     // else the closest more-specific published code
+  if (goodName) return values.find((v) => v.good === goodName) || null;
+  return null;
+}
+
+/**
  * Resolve the default-value mark-up fraction for a sector + import year
  * (R1: default-value basis carries a mark-up that escalates by year). Returns a
  * fraction, e.g. 0.10 for +10%. Falls back to the table's default when the sector
@@ -96,8 +142,9 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     datasetVersions
   };
 
-  // 1) CN code → CBAM good (R1.2)
-  const mapping = cnCodes.codes.find((c) => c.cnCode === cnCode);
+  // 1) CN code → CBAM good (R1.2). Resolve by longest-prefix match so a submitted
+  // subheading maps to the published Annex I entry that covers it.
+  const mapping = lookupCnMapping(cnCodes.codes, cnCode);
   if (!mapping || mapping.inScope === false) {
     return {
       ...base,
@@ -115,8 +162,11 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     };
   }
 
-  // 2) Default emission factor for the good (R1.3)
-  const dv = defaultValues.values.find((v) => v.good === mapping.good);
+  // 2) Default emission factor (R1.3). The values dataset is keyed by CN code
+  // (matching the binding Commission workbook); resolve by longest-prefix match so
+  // a submitted subheading maps to the most specific published code. Fall back to
+  // matching the good name for legacy/good-keyed datasets.
+  const dv = lookupDefaultValue(defaultValues.values, cnCode, mapping.good);
   // Prefer a country-specific default value where the binding methodology defines
   // one; otherwise use the good-level fallback (rest-of-world / top-10 average).
   let defaultFactor = null;
@@ -141,6 +191,7 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     {
       step: "default-value",
       good: mapping.good,
+      matchedCnCode: dv?.cnCode ?? null,
       factor: defaultFactor,
       basis: defaultValueBasis,
       country: defaultValueBasis === "country-specific" ? originCountry : null,

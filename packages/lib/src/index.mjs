@@ -6,7 +6,7 @@
  * - validateCalculationRecord: recompute a retained record and report mismatches.
  * - SECTORS / AUDIT_STEPS / UNSCOPED_REASONS: the response vocabulary.
  */
-export { calculateLine, normalizeCnCode, roundCertificates, resolveMarkup } from "./calculate.mjs";
+export { calculateLine, normalizeCnCode, roundCertificates, resolveMarkup, lookupDefaultValue, lookupCnMapping } from "./calculate.mjs";
 export { validateCalculationRecord } from "./validateRecord.mjs";
 
 export const SECTORS = ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"];

@@ -33,7 +33,7 @@ paths:
             schema: { $ref: "#/components/schemas/CalculateRequest" }
             examples:
               steel:
-                value: { cnCode: "72071110", originCountry: "IN", tonnes: 120 }
+                value: { cnCode: "72071111", originCountry: "CN", tonnes: 120 }
       responses:
         "200":
           description: Calculation result with audit trail.
@@ -108,7 +108,7 @@ components:
       type: object
       required: [cnCode, originCountry, tonnes]
       properties:
-        cnCode: { type: string, example: "72071110" }
+        cnCode: { type: string, example: "72071111" }
         originCountry: { type: string, example: "IN" }
         tonnes: { type: number, exclusiveMinimum: 0, example: 120 }
         importYear: { type: integer, example: 2026 }
