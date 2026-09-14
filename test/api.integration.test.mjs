@@ -112,6 +112,21 @@ test("anonymous calculations are not retained server-side", async () => {
   });
 });
 
+test("a record is NOT retrievable by a different key holder (IDOR scope)", async () => {
+  await withApp({}, async ({ base, keys }) => {
+    const owner = { authorization: "Bearer secret" };
+    const body = await (await calc(base, { cnCode: "72071110", originCountry: "IN", tonnes: 120 }, owner)).json();
+
+    keys.createKey("other-key", "pro", 100000);
+    const attacker = { authorization: "Bearer other-key" };
+    const res = await fetch(base + "/v1/calculations/" + body.recordId, { headers: attacker });
+    assert.equal(res.status, 404);
+
+    const ok = await fetch(base + "/v1/calculations/" + body.recordId, { headers: owner });
+    assert.equal(ok.status, 200);
+  });
+});
+
 test("rate limit returns 429 with headers after the per-minute budget", async () => {
   await withApp({}, async ({ base }) => {
     let last;

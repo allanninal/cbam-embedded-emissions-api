@@ -95,7 +95,7 @@ export function makeRecordStore(db) {
       (record_id, key_hash, cn_code, origin_country, tonnes, certificates_owed, cost, currency, record_json)
     VALUES (@recordId, @keyHash, @cnCode, @originCountry, @tonnes, @certificatesOwed, @cost, @currency, @recordJson)
   `);
-  const get = db.prepare("SELECT record_json FROM calculation_records WHERE record_id = ?");
+  const get = db.prepare("SELECT record_json, key_hash FROM calculation_records WHERE record_id = ?");
 
   return {
     /** Persist a calculation record. `keyHash` may be null for anonymous callers. */
@@ -115,7 +115,7 @@ export function makeRecordStore(db) {
     },
     get(recordId) {
       const row = get.get(recordId);
-      return row ? JSON.parse(row.record_json) : null;
+      return row ? { record: JSON.parse(row.record_json), keyHash: row.key_hash ?? null } : null;
     }
   };
 }

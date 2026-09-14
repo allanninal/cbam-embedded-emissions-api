@@ -46,7 +46,8 @@ export function makeMemoryRecordStore() {
       return record.recordId;
     },
     get(recordId) {
-      return records.get(recordId)?.record || null;
+      const row = records.get(recordId);
+      return row ? { record: row.record, keyHash: row.keyHash ?? null } : null;
     },
     _records: records
   };

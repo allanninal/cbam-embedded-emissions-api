@@ -141,8 +141,11 @@ export function createApp(opts = {}) {
     if (typeof tonnes !== "number" || !(tonnes > 0) || !Number.isFinite(tonnes)) {
       return { ok: false, error: "tonnes must be a positive number" };
     }
-    if (body.carbonPrice != null && (!(Number(body.carbonPrice) > 0))) {
-      return { ok: false, error: "carbonPrice, if provided, must be a positive number" };
+    if (body.carbonPrice != null) {
+      const cp = Number(body.carbonPrice);
+      if (!(cp > 0) || !Number.isFinite(cp) || cp > 100000) {
+        return { ok: false, error: "carbonPrice, if provided, must be a positive number below 100000 EUR/tCO2e" };
+      }
     }
     return { ok: true };
   }
@@ -194,11 +197,19 @@ export function createApp(opts = {}) {
     } catch (err) { next(err); }
   });
 
-  // --- GET /v1/calculations/:id --- (retained records, key holders) ---
+  // --- GET /v1/calculations/:id --- (retained records, ownership-scoped) ---
+  // A record written under a validated key is only returned to that same key;
+  // anonymous-written records (keyHash null) are retrievable by opaque id. This
+  // prevents one key holder from reading another key holder's calculations.
   app.get("/v1/calculations/:id", auth, (req, res) => {
-    const record = records?.get ? records.get(req.params.id) : null;
-    if (!record) return res.status(404).json({ error: "calculation record not found" });
-    res.json(record);
+    const stored = records?.get ? records.get(req.params.id) : null;
+    if (!stored) return res.status(404).json({ error: "calculation record not found" });
+    const ownerKeyHash = stored.keyHash ?? null;
+    const callerKeyHash = String(req.auth.keyHash).startsWith("ip:") ? null : req.auth.keyHash;
+    if (ownerKeyHash && ownerKeyHash !== callerKeyHash) {
+      return res.status(404).json({ error: "calculation record not found" });
+    }
+    res.json(stored.record);
   });
 
   // --- GET /v1/usage ---
