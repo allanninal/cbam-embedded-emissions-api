@@ -6,15 +6,18 @@ import { fixtureDatasets as ds, fixtureCarbonPrice as cp } from "./fixtures.mjs"
 
 const opts = { assessedAt: "2026-09-14T00:00:00Z" };
 
-test("audit trail has all six steps for an in-scope line, each with source + version", () => {
+test("audit trail has all steps for an in-scope line, each with source + version", () => {
   const r = calculateLine({ cnCode: "72071110", originCountry: "IN", tonnes: 120 }, ds, cp, opts);
   assert.deepEqual(r.auditTrail.map((s) => s.step),
-    ["cn-mapping", "default-value", "country-factor", "emissions", "certificates", "cost"]);
+    ["cn-mapping", "default-value", "country-factor", "emissions", "markup", "certificates", "cost"]);
   const cnStep = r.auditTrail.find((s) => s.step === "cn-mapping");
   assert.equal(cnStep.datasetVersion, "cn-test.1");
   assert.equal(cnStep.source, "test");
   const dvStep = r.auditTrail.find((s) => s.step === "default-value");
   assert.equal(dvStep.datasetVersion, "dv-test.1");
+  const mkStep = r.auditTrail.find((s) => s.step === "markup");
+  assert.equal(mkStep.markupPct, 0.10);
+  assert.equal(mkStep.datasetVersion, "mk-test.1");
 });
 
 test("checkAuditTrail reports complete for in-scope and out-of-scope", () => {

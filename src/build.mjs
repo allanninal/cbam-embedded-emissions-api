@@ -26,6 +26,7 @@ const cnCodes = readJson("data/cn-codes.json");
 const defaultValues = readJson("data/default-values.json");
 const countryFactors = readJson("data/country-factors.json");
 const carbonPrice = readJson("data/carbon-price.json");
+const markups = readJson("data/markups.json");
 
 async function writeJson(rel, obj) {
   const target = path.join(dist, rel);
@@ -42,6 +43,7 @@ await writeJson("api/v1/cn-codes.json", cnCodes);
 await writeJson("api/v1/default-values.json", defaultValues);
 await writeJson("api/v1/country-factors.json", countryFactors);
 await writeJson("api/v1/carbon-price.json", carbonPrice);
+await writeJson("api/v1/markups.json", markups);
 
 // Per-CN-code documents: /api/v1/cn-codes/{code}.json (R6.2).
 for (const c of cnCodes.codes) {
@@ -76,6 +78,7 @@ const index = {
       { method: "GET", path: `${BASE}/api/v1/cn-codes/{code}.json`, description: "A single CN-code mapping." },
       { method: "GET", path: `${BASE}/api/v1/default-values.json`, description: "Default embedded-emission values per good (tCO2e/t)." },
       { method: "GET", path: `${BASE}/api/v1/country-factors.json`, description: "Country adjustment factors." },
+      { method: "GET", path: `${BASE}/api/v1/markups.json`, description: "Default-value mark-up table (by sector and year)." },
       { method: "GET", path: `${BASE}/api/v1/carbon-price.json`, description: "Current cached EU ETS carbon price." },
       { method: "GET", path: `${BASE}/api/v1/schemas/calculate-response.schema.json`, description: "Calculate response JSON Schema." },
       { method: "GET", path: `${BASE}/api/v1/schemas/calculation-record.schema.json`, description: "Calculation record JSON Schema." }

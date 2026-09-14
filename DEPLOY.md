@@ -117,11 +117,30 @@ only AFTER DNS resolves, or the ACME challenge will fail.
 ## Reference-data caveat
 
 The shipped `data/default-values.json`, `data/cn-codes.json`, and `data/country-factors.json`
-contain a representative subset with **placeholder default values** so the calculator is runnable
-end-to-end. Before production use, replace them with the exact figures from the current
-Commission CBAM implementing acts / annexes and the current EU ETS reference price, bumping each
-dataset `version` and the matching `meta.datasetVersions` entry (the build gate enforces that
-they stay in sync).
+contain a representative subset with **illustrative default values** so the calculator is runnable
+end-to-end. The **legally binding** definitive-period default values are those in **Commission
+Implementing Regulation (EU) 2025/2621** (corrected by (EU) 2026/1740); the Commission also
+publishes a companion **Excel** for information.
+
+To load the real binding values, use the importer:
+
+```bash
+# export the Commission "Default values definitive period" sheet to CSV, then:
+npm run import-default-values -- path/to/default-values.csv --version dv-2026.2
+#   (accepts .xlsx too if the optional `xlsx` package is installed)
+# then bump meta.datasetVersions.defaultValues to match, and:
+npm run validate
+```
+
+The importer merges a good-level fallback (blank-country rows) with per-country overrides
+(`byCountry`), matching the calculator's model. Also review:
+- the **mark-up** table (`data/markups.json`) — 10/20/30% by year for iron-steel/aluminium/cement,
+  1% fertilisers;
+- **Annex III** exemptions in `data/country-factors.json`;
+- the EU ETS reference price in `data/carbon-price.json`.
+
+Bump each dataset `version` and the matching `meta.datasetVersions` entry when you update (the
+build gate enforces they stay in sync).
 
 ## Updating
 

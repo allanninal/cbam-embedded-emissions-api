@@ -32,6 +32,25 @@ function round2(n) {
 }
 
 /**
+ * Resolve the default-value mark-up fraction for a sector + import year
+ * (R1: default-value basis carries a mark-up that escalates by year). Returns a
+ * fraction, e.g. 0.10 for +10%. Falls back to the table's default when the sector
+ * or year is not explicitly listed.
+ */
+export function resolveMarkup(markups, sector, importYear) {
+  if (!markups) return 0;
+  const year = String(importYear || "");
+  const sec = markups.sectors?.[sector];
+  if (sec) {
+    if (year && sec[year] != null) return Number(sec[year]);
+    if (sec.beyond != null) return Number(sec.beyond);
+  }
+  const byYear = markups.defaultMarkupByYear || {};
+  if (year && byYear[year] != null) return Number(byYear[year]);
+  return Number(markups.defaultMarkupBeyond ?? 0);
+}
+
+/**
  * @typedef {object} Datasets
  * @property {{version:string, source:string, codes:Array}} cnCodes
  * @property {{version:string, source:string, values:Array}} defaultValues
@@ -49,10 +68,11 @@ function round2(n) {
  * @returns {object} calculate response (matches calculate-response.schema.json)
  */
 export function calculateLine(input, datasets, carbonPrice, opts = {}) {
-  const { cnCodes, defaultValues, countryFactors, meta = {} } = datasets;
+  const { cnCodes, defaultValues, countryFactors, markups, meta = {} } = datasets;
   const assessedAt = opts.assessedAt || new Date().toISOString();
   const deMinimis = opts.deMinimisTonnes ?? meta.deMinimisTonnes ?? 50;
   const rounding = opts.rounding || meta.certificateRounding || "round-half-up";
+  const importYear = input.importYear ?? opts.importYear ?? meta.defaultImportYear ?? 2026;
 
   const cnCode = normalizeCnCode(input.cnCode);
   const originCountry = String(input.originCountry || "").toUpperCase();
@@ -62,6 +82,7 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     cnMapping: cnCodes.version,
     defaultValues: defaultValues.version,
     countryFactors: countryFactors.version,
+    markups: markups?.version,
     carbonPrice: carbonPrice.asOf,
     stale: carbonPrice.stale === true
   };
@@ -96,7 +117,19 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
 
   // 2) Default emission factor for the good (R1.3)
   const dv = defaultValues.values.find((v) => v.good === mapping.good);
-  const defaultFactor = dv ? Number(dv.factor) : null;
+  // Prefer a country-specific default value where the binding methodology defines
+  // one; otherwise use the good-level fallback (rest-of-world / top-10 average).
+  let defaultFactor = null;
+  let defaultValueBasis = "good-fallback";
+  if (dv) {
+    if (dv.byCountry && dv.byCountry[originCountry] != null) {
+      defaultFactor = Number(dv.byCountry[originCountry]);
+      defaultValueBasis = "country-specific";
+    } else {
+      defaultFactor = Number(dv.factor);
+      defaultValueBasis = "good-fallback";
+    }
+  }
 
   // 3) Country factor (R1.3, R6.4)
   const cf = countryFactors.factors.find((f) => f.iso2 === originCountry);
@@ -109,6 +142,8 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
       step: "default-value",
       good: mapping.good,
       factor: defaultFactor,
+      basis: defaultValueBasis,
+      country: defaultValueBasis === "country-specific" ? originCountry : null,
       unit: "tCO2e/t",
       source: defaultValues.source,
       datasetVersion: defaultValues.version
@@ -168,15 +203,35 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     unit: "tCO2e"
   });
 
+  // 5) Default-value mark-up (R1): using default values (not verified actuals)
+  // adds a sector- and year-dependent mark-up to the emissions figure before it
+  // is converted to certificates. 10/20/30% (2026/27/28+) for iron-steel,
+  // aluminium, cement; 1% for fertilisers; 0% for hydrogen/electricity.
+  const markupPct = resolveMarkup(markups, mapping.sector, importYear);
+  const markedUpEmissions = round2(emissions * (1 + markupPct));
+  auditTrail.push({
+    step: "markup",
+    reason: "default-value basis (not verified actual emissions)",
+    importYear,
+    markupPct,
+    formula: "emissions × (1 + markupPct)",
+    value: markedUpEmissions,
+    unit: "tCO2e",
+    source: markups?.source,
+    datasetVersion: markups?.version
+  });
+
   // 6) Carbon price (R4.2) + de-minimis gate (R1.6)
   const price = carbonPriceBlock(carbonPrice);
   const belowDeMinimis = tonnes < deMinimis;
 
-  // 5) Certificates owed (R1.4). Below de-minimis ⇒ 0 certificates, indicative emissions kept.
-  const certificatesOwed = belowDeMinimis ? 0 : roundCertificates(emissions, rounding);
+  // 7) Certificates owed (R1.4). Based on the marked-up emissions. Below
+  // de-minimis ⇒ 0 certificates, indicative emissions kept.
+  const certificatesOwed = belowDeMinimis ? 0 : roundCertificates(markedUpEmissions, rounding);
   auditTrail.push({
     step: "certificates",
     rounding,
+    basis: "marked-up emissions",
     value: certificatesOwed,
     ...(belowDeMinimis ? { note: `below ${deMinimis}t de-minimis threshold; no certificates owed` } : {})
   });
@@ -193,11 +248,13 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
 
   return {
     ...base,
+    importYear,
     cbamGood: mapping.good,
     sector: mapping.sector,
     inScope: !belowDeMinimis,
     reason: belowDeMinimis ? "below-de-minimis" : null,
     embeddedEmissions: { value: emissions, unit: "tCO2e" },
+    markup: { pct: markupPct, markedUpEmissions: { value: markedUpEmissions, unit: "tCO2e" } },
     certificatesOwed,
     carbonPrice: price,
     cost: { value: cost, currency: "EUR" },

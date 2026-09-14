@@ -45,6 +45,7 @@ export function makeCalculationRecord(result, { service, recordId } = {}) {
       cnMapping: result.datasetVersions.cnMapping,
       defaultValues: result.datasetVersions.defaultValues,
       countryFactors: result.datasetVersions.countryFactors,
+      markups: result.datasetVersions.markups,
       carbonPrice: result.datasetVersions.carbonPrice
     },
     calculatedAt: result.assessedAt,

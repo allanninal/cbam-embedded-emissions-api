@@ -40,13 +40,14 @@ for (const f of schemaFiles) {
 }
 
 // 2) Parse reference data.
-let meta, sectors, cnCodes, defaultValues, countryFactors, carbonPrice;
+let meta, sectors, cnCodes, defaultValues, countryFactors, carbonPrice, markups;
 try { meta = readJson("data/meta.json"); } catch (e) { fail(`data/meta.json: ${e.message}`); }
 try { sectors = readJson("data/sectors.json"); } catch (e) { fail(`data/sectors.json: ${e.message}`); }
 try { cnCodes = readJson("data/cn-codes.json"); } catch (e) { fail(`data/cn-codes.json: ${e.message}`); }
 try { defaultValues = readJson("data/default-values.json"); } catch (e) { fail(`data/default-values.json: ${e.message}`); }
 try { countryFactors = readJson("data/country-factors.json"); } catch (e) { fail(`data/country-factors.json: ${e.message}`); }
 try { carbonPrice = readJson("data/carbon-price.json"); } catch (e) { fail(`data/carbon-price.json: ${e.message}`); }
+try { markups = readJson("data/markups.json"); } catch (e) { fail(`data/markups.json: ${e.message}`); }
 
 // 3) Validate datasets against their schemas.
 const validateAgainst = (schemaFile, data, label) => {
@@ -60,6 +61,7 @@ const validateAgainst = (schemaFile, data, label) => {
 validateAgainst("cn-code.schema.json", cnCodes, "data/cn-codes.json");
 validateAgainst("default-value.schema.json", defaultValues, "data/default-values.json");
 validateAgainst("country-factor.schema.json", countryFactors, "data/country-factors.json");
+validateAgainst("markup.schema.json", markups, "data/markups.json");
 
 // 4) meta.json required fields + key dates.
 if (meta) {
@@ -92,6 +94,13 @@ if (meta && cnCodes && defaultValues && countryFactors) {
   if (dv.cnMapping !== cnCodes.version) fail(`meta.datasetVersions.cnMapping (${dv.cnMapping}) != cn-codes.json version (${cnCodes.version})`);
   if (dv.defaultValues !== defaultValues.version) fail(`meta.datasetVersions.defaultValues (${dv.defaultValues}) != default-values.json version (${defaultValues.version})`);
   if (dv.countryFactors !== countryFactors.version) fail(`meta.datasetVersions.countryFactors (${dv.countryFactors}) != country-factors.json version (${countryFactors.version})`);
+}
+if (meta && markups) {
+  const dv = meta.datasetVersions || {};
+  if (dv.markups !== markups.version) fail(`meta.datasetVersions.markups (${dv.markups}) != markups.json version (${markups.version})`);
+  for (const s of SECTORS) {
+    if (!markups.sectors || markups.sectors[s] == null) fail(`markups.json missing sector: ${s}`);
+  }
 }
 
 // 6) carbon-price.json shape.

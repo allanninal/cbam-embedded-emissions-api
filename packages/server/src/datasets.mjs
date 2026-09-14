@@ -23,17 +23,19 @@ const readJson = (dir, name) => JSON.parse(readFileSync(path.join(dir, name), "u
  * @param {object} docs { cnCodes, defaultValues, countryFactors, sectors, meta }
  */
 export function makeDatasets(docs) {
-  const { cnCodes, defaultValues, countryFactors, sectors, meta } = docs;
+  const { cnCodes, defaultValues, countryFactors, markups, sectors, meta } = docs;
   return {
     cnCodes,
     defaultValues,
     countryFactors,
+    markups,
     sectors,
     meta,
     versions: {
       cnMapping: cnCodes.version,
       defaultValues: defaultValues.version,
       countryFactors: countryFactors.version,
+      markups: markups?.version,
       sectors: sectors?.version
     }
   };
@@ -45,6 +47,7 @@ export function loadDatasets(dataDir = process.env.DATA_DIR || DEFAULT_DATA_DIR)
     cnCodes: readJson(dataDir, "cn-codes.json"),
     defaultValues: readJson(dataDir, "default-values.json"),
     countryFactors: readJson(dataDir, "country-factors.json"),
+    markups: readJson(dataDir, "markups.json"),
     sectors: readJson(dataDir, "sectors.json"),
     meta: readJson(dataDir, "meta.json")
   });

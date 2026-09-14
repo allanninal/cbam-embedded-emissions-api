@@ -30,14 +30,15 @@ const calc = (base, body, headers = {}) =>
 
 test("POST /v1/calculate returns emissions, certificates, cost, and audit trail", async () => {
   await withApp({}, async ({ base }) => {
-    const res = await calc(base, { cnCode: "72071110", originCountry: "IN", tonnes: 120 });
+    const res = await calc(base, { cnCode: "72071110", originCountry: "IN", tonnes: 120, importYear: 2026 });
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.equal(body.inScope, true);
     assert.equal(body.embeddedEmissions.value, 240);
-    assert.equal(body.certificatesOwed, 240);
-    assert.equal(body.cost.value, 16800);
-    assert.equal(body.auditTrail.length, 6);
+    assert.equal(body.markup.pct, 0.10);
+    assert.equal(body.certificatesOwed, 264); // 240 * 1.10 default-value markup
+    assert.equal(body.cost.value, 18480);      // 264 * 70
+    assert.equal(body.auditTrail.length, 7);
     assert.ok(body.recordId);
     assert.equal(body.datasetVersions.cnMapping, "cn-test.1");
   });

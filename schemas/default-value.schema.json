@@ -26,9 +26,14 @@
           "factor": {
             "type": "number",
             "minimum": 0,
-            "description": "Default embedded-emission value for the good, in tCO2e per tonne of product."
+            "description": "Fallback default embedded-emission value for the good (tCO2e/t), used when no country-specific value applies. Corresponds to the rest-of-world / top-10-highest-emitters average in the binding methodology."
           },
           "unit": { "type": "string", "const": "tCO2e/t" },
+          "byCountry": {
+            "type": "object",
+            "description": "Optional country-specific default values, keyed by ISO 3166-1 alpha-2 code. Overrides `factor` when the origin country matches.",
+            "additionalProperties": { "type": "number", "minimum": 0 }
+          },
           "note": { "type": "string" }
         }
       }

@@ -1,0 +1,17 @@
+{
+  "version": "mk-2026.1",
+  "source": "Commission Implementing Regulation (EU) 2025/2621 (default-value mark-up for the definitive period)",
+  "sourceUrl": "https://eur-lex.europa.eu/eli/reg_impl/2025/2621/oj",
+  "effectiveDate": "2026-01-01",
+  "note": "When embedded emissions are determined with DEFAULT values (rather than verified actual values), a mark-up is added to the resulting figure. The mark-up escalates by import year to incentivise use of verified actual data. For iron & steel, aluminium and cement the mark-up is 10% (2026), 20% (2027) and 30% (from 2028). For fertilisers it is capped at 1% across all years. Hydrogen and electricity have no mark-up under this table. Confirm against the binding Regulation before production use.",
+  "defaultMarkupByYear": { "2026": 0.10, "2027": 0.20, "2028": 0.30 },
+  "defaultMarkupBeyond": 0.30,
+  "sectors": {
+    "iron-steel":   { "2026": 0.10, "2027": 0.20, "2028": 0.30, "beyond": 0.30 },
+    "aluminium":    { "2026": 0.10, "2027": 0.20, "2028": 0.30, "beyond": 0.30 },
+    "cement":       { "2026": 0.10, "2027": 0.20, "2028": 0.30, "beyond": 0.30 },
+    "fertilisers":  { "2026": 0.01, "2027": 0.01, "2028": 0.01, "beyond": 0.01 },
+    "hydrogen":     { "2026": 0.00, "2027": 0.00, "2028": 0.00, "beyond": 0.00 },
+    "electricity":  { "2026": 0.00, "2027": 0.00, "2028": 0.00, "beyond": 0.00 }
+  }
+}

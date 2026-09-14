@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/markup.schema.json",
+  "title": "CBAM default-value mark-up table",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source", "effectiveDate", "sectors"],
+  "properties": {
+    "version": { "type": "string" },
+    "source": { "type": "string" },
+    "sourceUrl": { "type": "string" },
+    "effectiveDate": { "type": "string", "format": "date" },
+    "note": { "type": "string" },
+    "defaultMarkupByYear": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "defaultMarkupBeyond": { "type": "number", "minimum": 0 },
+    "sectors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

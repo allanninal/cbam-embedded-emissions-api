@@ -127,6 +127,15 @@ components:
             value: { type: number }
             unit: { type: string, example: tCO2e }
         certificatesOwed: { type: integer }
+        markup:
+          type: object
+          properties:
+            pct: { type: number, description: "Default-value mark-up fraction (e.g. 0.10 = +10%). 10/20/30% by year for iron-steel/aluminium/cement; 1% fertilisers." }
+            markedUpEmissions:
+              type: object
+              properties:
+                value: { type: number }
+                unit: { type: string, example: tCO2e }
         carbonPrice:
           type: object
           properties:

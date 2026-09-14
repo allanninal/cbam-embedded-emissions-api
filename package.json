@@ -11,6 +11,7 @@
   "scripts": {
     "validate": "node src/validate-data.mjs",
     "build": "node src/build.mjs",
+    "import-default-values": "node scripts/import-default-values.mjs",
     "test": "node --test test/*.test.mjs",
     "test:unit": "node --test test/calc.test.mjs test/audit.test.mjs test/datasets.test.mjs test/carbon-price.test.mjs test/data.test.mjs test/rate-limit.test.mjs",
     "test:integration": "node --test test/api.integration.test.mjs",

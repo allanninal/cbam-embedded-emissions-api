@@ -7,8 +7,10 @@ test("loadDatasets loads the shipped reference data with versions", () => {
   assert.ok(ds.cnCodes.version);
   assert.ok(ds.defaultValues.version);
   assert.ok(ds.countryFactors.version);
+  assert.ok(ds.markups.version);
   assert.equal(ds.meta.deMinimisTonnes, 50);
   assert.equal(ds.versions.cnMapping, ds.cnCodes.version);
+  assert.equal(ds.versions.markups, ds.markups.version);
 });
 
 test("every in-scope shipped CN code has a matching default value", () => {

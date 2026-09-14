@@ -20,6 +20,16 @@ freight forwarder's or ERP vendor's engineer can call from inside a customs work
 factor → certificate count`, with a per-line audit trail. All inputs are free and
 Commission-published.
 
+Two rules the calculator applies that materially affect the number:
+- **Default-value mark-up.** Using default values (rather than verified actuals) adds a mark-up to
+  the emissions before they become certificates: **+10% (2026), +20% (2027), +30% (from 2028)** for
+  iron & steel, aluminium and cement; **+1%** for fertilisers (Commission Implementing Regulation
+  (EU) 2025/2621).
+- **Country-specific default values.** Where the binding methodology defines a country-specific
+  value it overrides the good-level fallback (the rest-of-world / top-10-highest-emitters average).
+- **Annex III origins** (EU-ETS participants: Iceland, Liechtenstein, Norway, Switzerland) are
+  outside CBAM scope — reported as `exempt-origin`, no certificates owed.
+
 **Key dates:** definitive regime **1 Jan 2026**; declaration creation opens in the Commission's
 registry **Q4 2026**; certificate purchase & surrender start **Feb 2027**; first annual declaration
 (2026 imports) due **30 Sep 2027**.
@@ -57,8 +67,8 @@ tables, country adjustment factors, and the public EU ETS carbon price.
 ## Endpoints
 
 **Static (no auth):** `/api/v1/index.json`, `meta.json`, `sectors.json`, `cn-codes.json`,
-`cn-codes/{code}.json`, `default-values.json`, `country-factors.json`, `carbon-price.json`,
-`schemas/*.json`.
+`cn-codes/{code}.json`, `default-values.json`, `country-factors.json`, `markups.json`,
+`carbon-price.json`, `schemas/*.json`.
 
 **Compute (public/free, rate limited):**
 - `POST /v1/calculate` — single line → emissions + certificates + cost + audit trail

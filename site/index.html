@@ -116,6 +116,7 @@
       ? `<h3>${r.cbamGood} <span class="tag">${r.sector}</span></h3>
          <div class="grid">
            <div><span>Embedded emissions</span><strong>${r.embeddedEmissions.value} tCO2e</strong></div>
+           <div><span>Default-value markup</span><strong>+${(r.markup.pct * 100).toFixed(0)}% <small>(${r.importYear})</small></strong></div>
            <div><span>Certificates owed</span><strong>${r.certificatesOwed}</strong></div>
            <div><span>Carbon price</span><strong>${money(r.carbonPrice.value)}/t <small>(${r.carbonPrice.asOf})</small></strong></div>
            <div><span>Cost</span><strong>${money(r.cost.value)}</strong></div>
