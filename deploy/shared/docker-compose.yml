@@ -64,7 +64,7 @@ services:
       retries: 5
 
   apisix:
-    image: apache/apisix:3.9.1-debian
+    image: apache/apisix:3.18.0-debian
     container_name: shared-apisix
     restart: unless-stopped
     depends_on:
@@ -102,7 +102,7 @@ services:
   # is defined — per-project composes no longer declare it, so there is no
   # container-name collision and no "last repo deployed wins" config drift.
   caddy:
-    image: caddy:2.8
+    image: caddy:2.11.1
     container_name: shared-caddy
     restart: unless-stopped
     environment:
