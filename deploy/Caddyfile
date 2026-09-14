@@ -8,6 +8,10 @@
 # (deploy/shared/apisix/apisix.yaml), not here — this file just forwards each
 # known prefix to the gateway.
 #
+# This is the AUTHORITATIVE shared edge config, kept identical across all project
+# repos (cbam / c2pa / eudr). Whichever repo is deployed serves the same landing
+# page + forwards the same prefixes. Edit once, copy to the sibling repos.
+#
 # TLS: set SITE_ADDRESS to a domain (e.g. apis.example.com) in .env and Caddy
 # provisions a Let's Encrypt certificate automatically. Left unset it defaults to
 # :80 (bare-IP HTTP) for pre-domain deployments.

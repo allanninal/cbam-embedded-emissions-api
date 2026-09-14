@@ -26,22 +26,30 @@ same server next to EUDR and C2PA with **zero collision**.
 | App limiter prefix (Redis DB 0) | `eudr:rl:` | `c2pa:rl:` | `cbam:rl:` |
 | Gateway limiter prefix (Redis DB 1) | `eudr:gw:` | `c2pa:gw:` | `cbam:gw:` |
 
-## Shared services (Redis + API gateway)
+## Shared services (edge + gateway + Redis)
 
-Two shared services run in their own stack (`deploy/shared/`) so multiple projects on this server
-reuse them:
+Three shared services run in their own stack (`deploy/shared/`) so every project on this server
+reuses them. **This stack is the single owner of the public edge** — no per-project compose defines
+Caddy anymore:
 
-- **Redis** — rate-limit counters (app + gateway).
+- **Caddy** (`shared-caddy`) — the ONLY container binding `:80/:443`. TLS, body cap, real client
+  IP, and the landing page. Mounts `deploy/Caddyfile`.
 - **Apache APISIX** (`shared-apisix`) — the shared API gateway (standalone/YAML mode, no etcd):
   routing, Redis-backed rate limiting, CORS.
+- **Redis** (`shared-redis`) — rate-limit counters (app + gateway).
 
 First-time server setup (once — skip if the shared stack is already running for EUDR/C2PA):
 
 ```bash
 docker network create shared-net
 cp deploy/shared/.env.example deploy/shared/.env   # set REDIS_PASSWORD (openssl rand -hex 24)
-docker compose -f deploy/shared/docker-compose.yml up -d   # starts redis + apisix
+                                                   # and optionally SITE_ADDRESS for HTTPS
+docker compose -f deploy/shared/docker-compose.yml up -d   # starts redis + apisix + caddy
 ```
+
+The `Caddyfile` and `deploy/shared/apisix/apisix.yaml` are kept **byte-identical across the cbam /
+c2pa / eudr repos**, so it does not matter which repo you launch the shared stack from — all three
+projects (`/cbam`, `/c2pa`, `/eudr`) are routed and linked on the landing page either way.
 
 Gateway routes live in `deploy/shared/apisix/apisix.yaml`. For CBAM:
 - `/cbam/api/*` → static reference data (free, **not** rate limited)
@@ -50,9 +58,52 @@ Gateway routes live in `deploy/shared/apisix/apisix.yaml`. For CBAM:
 The Redis password is injected at container start (`entrypoint.sh` renders the route table from
 the `__REDIS_PASSWORD__` placeholder) so the secret is never committed.
 
-> If the shared stack is already running for EUDR/C2PA, you only need to ensure the CBAM route
-> blocks are present in `deploy/shared/apisix/apisix.yaml` and reload:
+> If the shared stack is already running, you only need to ensure the CBAM route blocks are present
+> in `deploy/shared/apisix/apisix.yaml` and reload:
 > `docker compose -f deploy/shared/docker-compose.yml restart apisix`.
+
+## Migrating an existing server to the single-owner edge (one-time)
+
+Older revisions of these projects each defined their **own** `caddy` service (all named
+`shared-caddy`) inside the per-project `docker-compose.yml`, and mounted that repo's Caddyfile.
+Because only one container can hold the name `shared-caddy`, whichever repo was deployed last
+silently owned the edge — which is how a project (e.g. CBAM) could be missing from the landing page
+and the routes even though its `api` container was running.
+
+The edge is now defined **only** in `deploy/shared/docker-compose.yml`. To cut a server that was
+running the old layout over to the new one, do this **once**:
+
+```bash
+# 1) Stop the OLD project-owned edge/gateway so their container names free up.
+#    Run in whichever repo previously started them (the one that "won" the edge):
+docker compose down          # removes that repo's api + the old shared-caddy it declared
+
+#    If any shared containers are still present (started by a different old repo),
+#    remove them by name so the new shared stack can recreate them cleanly:
+docker rm -f shared-caddy shared-apisix shared-redis 2>/dev/null || true
+#    NOTE: this removes CONTAINERS only. Named volumes (caddy-data with the TLS
+#    certs, redis data) persist, so HTTPS certificates are NOT lost.
+
+# 2) Pull the reconciled config onto the server (all three repos now carry the
+#    identical Caddyfile + apisix.yaml + shared compose):
+git pull   # in each repo you deploy from
+
+# 3) Bring up the NEW single-owner shared stack (from any one repo):
+docker network create shared-net 2>/dev/null || true
+cp deploy/shared/.env.example deploy/shared/.env   # if not already present; set REDIS_PASSWORD (+ SITE_ADDRESS)
+docker compose -f deploy/shared/docker-compose.yml up -d   # redis + apisix + caddy
+
+# 4) Start each project's api (from each repo root). These no longer start Caddy:
+docker compose up -d          # cbam-api (+ backup)
+# (repeat in the c2pa and eudr repos: docker compose up -d)
+
+# 5) Verify all three are routed and on the landing page:
+curl -s http://SERVER_IP/ | grep -o '/cbam/\|/c2pa/\|/eudr/'   # expect all three
+curl -s http://SERVER_IP/cbam/api/v1/index.json | head
+```
+
+After this cutover, per-project deploys (`docker compose up -d`) only ever touch that project's
+`api`/`backup` and can never collide with or redefine the edge.
 
 ## First deploy
 
@@ -64,7 +115,8 @@ the `__REDIS_PASSWORD__` placeholder) so the secret is never committed.
 # 1) this project's .env needs the SAME REDIS_PASSWORD as deploy/shared/.env
 cp .env.example .env   # then set REDIS_PASSWORD to match the shared one
 
-# 2) build + start
+# 2) build + start THIS project's containers (api + backup). The edge/gateway
+#    are already running in the shared stack — this does NOT start Caddy.
 docker compose up -d --build
 
 # 3) if you edited the shared route table, reload the gateway:
@@ -91,16 +143,24 @@ Expected smoke results:
 ## Adding a domain + automatic HTTPS
 
 Point a DNS A record at the server (e.g. `apis -> SERVER_IP`; all projects share the host via
-path prefixes, e.g. `https://apis.allanninal.dev/cbam/...`). Then set `SITE_ADDRESS=apis.allanninal.dev`
-in `.env` and `docker compose up -d caddy` — Caddy provisions Let's Encrypt automatically. Do this
-only AFTER DNS resolves, or the ACME challenge will fail.
+path prefixes, e.g. `https://apis.allanninal.dev/cbam/...`). Then set
+`SITE_ADDRESS=apis.allanninal.dev` in **`deploy/shared/.env`** (the edge now lives in the shared
+stack) and restart Caddy:
+
+```bash
+docker compose -f deploy/shared/docker-compose.yml up -d caddy
+```
+
+Caddy provisions Let's Encrypt automatically. Do this only AFTER DNS resolves, or the ACME
+challenge will fail.
 
 ## Hardening & operations
 
 - **Non-root, minimal image:** multi-stage build; the compiler/dev deps stay in the builder
   stage; the runtime image runs as the non-root `node` user with production deps only.
 - **Container hardening:** `cap_drop: ALL`, `no-new-privileges`, read-only root filesystem
-  (writable data on the mounted volume + a `/tmp` tmpfs). Caddy keeps only `NET_BIND_SERVICE`.
+  (writable data on the mounted volume + a `/tmp` tmpfs). The shared Caddy edge keeps only
+  `NET_BIND_SERVICE`.
 - **Resource limits:** the api container is capped (0.5 CPU / 384 MB) so it can't starve
   co-located projects.
 - **Graceful shutdown:** the API traps SIGTERM/SIGINT, drains in-flight requests, stops the

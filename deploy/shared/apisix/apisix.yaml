@@ -7,6 +7,10 @@
 # __REDIS_PASSWORD__ is substituted at container start by entrypoint.sh — the real
 # secret is never committed.
 #
+# This is the AUTHORITATIVE shared route table, kept identical across all project
+# repos (cbam / c2pa / eudr). Whichever repo is deployed brings the same routes
+# online. Edit once, copy to the sibling repos' deploy/shared/apisix/apisix.yaml.
+#
 # Isolation between co-located projects:
 #   project | path prefix | upstream         | gateway redis_prefix (DB 1)
 #   --------|-------------|------------------|----------------------------
