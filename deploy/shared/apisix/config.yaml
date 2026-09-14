@@ -1,0 +1,12 @@
+# Apache APISIX — standalone (no etcd) deployment config.
+# Routes/consumers live in apisix.yaml, read declaratively from disk.
+apisix:
+  node_listen: 9080          # proxy port (behind Caddy; not published to the host)
+  enable_admin: false        # no admin API in standalone mode
+deployment:
+  role: data_plane
+  role_data_plane:
+    config_provider: yaml    # standalone: read apisix.yaml instead of etcd
+# Keep logs lean on a shared box.
+nginx_config:
+  error_log_level: warn

@@ -1,0 +1,18 @@
+{
+  "version": "cf-2026.1",
+  "source": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+  "effectiveDate": "2026-01-01",
+  "note": "Origin-country adjustment factors applied to the default embedded-emission value where the Commission defines a country-specific adjustment. Unlisted countries use defaultFactor. Values here are representative placeholders (1.0 = no adjustment) pending the current Commission adjustment tables.",
+  "defaultFactor": 1.0,
+  "factors": [
+    { "iso2": "CN", "name": "China", "factor": 1.0 },
+    { "iso2": "IN", "name": "India", "factor": 1.0 },
+    { "iso2": "TR", "name": "Türkiye", "factor": 1.0 },
+    { "iso2": "RU", "name": "Russia", "factor": 1.0 },
+    { "iso2": "UA", "name": "Ukraine", "factor": 1.0 },
+    { "iso2": "GB", "name": "United Kingdom", "factor": 1.0 },
+    { "iso2": "US", "name": "United States", "factor": 1.0 },
+    { "iso2": "KR", "name": "South Korea", "factor": 1.0 },
+    { "iso2": "BR", "name": "Brazil", "factor": 1.0 }
+  ]
+}

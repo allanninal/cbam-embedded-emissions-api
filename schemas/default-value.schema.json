@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/default-value.schema.json",
+  "title": "CBAM default embedded-emission values",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source", "effectiveDate", "values"],
+  "properties": {
+    "version": { "type": "string" },
+    "source": { "type": "string" },
+    "effectiveDate": { "type": "string", "format": "date" },
+    "note": { "type": "string" },
+    "values": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["good", "sector", "factor", "unit"],
+        "properties": {
+          "good": { "type": "string" },
+          "sector": {
+            "type": "string",
+            "enum": ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"]
+          },
+          "factor": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Default embedded-emission value for the good, in tCO2e per tonne of product."
+          },
+          "unit": { "type": "string", "const": "tCO2e/t" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

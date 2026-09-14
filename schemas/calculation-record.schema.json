@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/calculation-record.schema.json",
+  "title": "CBAM calculation record (retained history)",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "recordId", "input", "certificatesOwed", "cost", "currency",
+    "datasetVersions", "calculatedAt", "service"
+  ],
+  "properties": {
+    "recordId": { "type": "string" },
+    "input": {
+      "type": "object",
+      "required": ["cnCode", "originCountry", "tonnes"],
+      "properties": {
+        "cnCode": { "type": "string" },
+        "originCountry": { "type": "string" },
+        "tonnes": { "type": "number" },
+        "importYear": { "type": ["integer", "null"] }
+      }
+    },
+    "cbamGood": { "type": ["string", "null"] },
+    "sector": { "type": ["string", "null"] },
+    "inScope": { "type": "boolean" },
+    "embeddedEmissions": { "type": "number", "minimum": 0 },
+    "certificatesOwed": { "type": "integer", "minimum": 0 },
+    "carbonPrice": {
+      "type": "object",
+      "required": ["value", "asOf"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "asOf": { "type": "string" }
+      }
+    },
+    "cost": { "type": "number", "minimum": 0 },
+    "currency": { "type": "string", "const": "EUR" },
+    "datasetVersions": {
+      "type": "object",
+      "required": ["cnMapping", "defaultValues", "countryFactors", "carbonPrice"],
+      "properties": {
+        "cnMapping": { "type": "string" },
+        "defaultValues": { "type": "string" },
+        "countryFactors": { "type": "string" },
+        "carbonPrice": { "type": "string" }
+      }
+    },
+    "calculatedAt": { "type": "string" },
+    "service": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    }
+  }
+}

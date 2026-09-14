@@ -1,0 +1,23 @@
+{
+  "name": "cbam-embedded-emissions-api",
+  "version": "1.0.0",
+  "description": "Developer-first EU CBAM API: take a CN code, an origin country and a tonnage, and return embedded emissions, the CBAM certificates owed and what they will cost — with a defensible audit trail per declaration line.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "validate": "node src/validate-data.mjs",
+    "build": "node src/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:unit": "node --test test/calc.test.mjs test/audit.test.mjs test/datasets.test.mjs test/carbon-price.test.mjs test/data.test.mjs test/rate-limit.test.mjs",
+    "test:integration": "node --test test/api.integration.test.mjs",
+    "dev": "node src/build.mjs && npx http-server dist -p 8080 -c-1"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

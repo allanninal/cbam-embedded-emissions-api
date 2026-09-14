@@ -1,0 +1,8 @@
+{
+  "value": 72.14,
+  "currency": "EUR",
+  "asOf": "2026-09-11",
+  "source": "EU ETS (reference price)",
+  "freshnessWindowDays": 14,
+  "note": "Cached EU ETS carbon price used to cost CBAM certificates (EUR per tCO2e / per certificate). Refreshed on a schedule; a stale value beyond freshnessWindowDays is flagged in each response's datasetVersions.stale."
+}

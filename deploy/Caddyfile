@@ -1,0 +1,117 @@
+# Shared edge (TLS + safety) in front of the shared API gateway.
+#
+#   Internet -> Caddy (TLS, body cap, real client IP) -> APISIX (routing,
+#   rate limiting, CORS, per-project routes) -> project API containers.
+#
+# Caddy forwards the FULL path (e.g. /cbam/...) to APISIX, which owns routing and
+# strips the project prefix per route. New projects are added in APISIX
+# (deploy/shared/apisix/apisix.yaml), not here — this file just forwards each
+# known prefix to the gateway.
+#
+# TLS: set SITE_ADDRESS to a domain (e.g. apis.example.com) in .env and Caddy
+# provisions a Let's Encrypt certificate automatically. Left unset it defaults to
+# :80 (bare-IP HTTP) for pre-domain deployments.
+
+(project_routes) {
+	encode gzip
+
+	handle /robots.txt {
+		header Content-Type text/plain
+		respond "User-agent: *
+Allow: /
+Sitemap: https://apis.allanninal.dev/cbam/sitemap.xml
+Sitemap: https://apis.allanninal.dev/c2pa/sitemap.xml
+Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
+" 200
+	}
+
+	# --- CBAM embedded-emissions API ---
+	@cbam path /cbam/* /cbam
+	handle @cbam {
+		request_body {
+			max_size 2MB
+		}
+		reverse_proxy shared-apisix:9080 {
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# --- C2PA provenance API (sibling project on the same server) ---
+	@c2pa path /c2pa/* /c2pa
+	handle @c2pa {
+		request_body {
+			max_size 30MB
+		}
+		reverse_proxy shared-apisix:9080 {
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# --- EUDR API (sibling project on the same server) ---
+	@eudr path /eudr/* /eudr
+	handle @eudr {
+		request_body {
+			max_size 2MB
+		}
+		reverse_proxy shared-apisix:9080 {
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# HTML landing page at the bare root, linking all projects.
+	handle / {
+		header Content-Type "text/html; charset=utf-8"
+		respond `<!doctype html>
+		<html lang="en"><head><meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>APIs · allanninal.dev</title>
+		<style>
+		:root{--fg:#1a1f2b;--muted:#5b6473;--line:#e2e6ee;--accent:#2f6df6;--soft:#f4f6fa}
+		*{box-sizing:border-box}
+		body{margin:0;color:var(--fg);background:#fff;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+		main{max-width:720px;margin:0 auto;padding:56px 20px}
+		h1{font-size:1.7rem;margin:0 0 .2em}
+		p.sub{color:var(--muted);margin:0 0 2em}
+		a.card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:0 0 14px;background:var(--soft);transition:border-color .15s,transform .05s}
+		a.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+		a.card h2{margin:0 0 .25em;font-size:1.12rem;color:var(--accent)}
+		a.card p{margin:0;color:var(--muted);font-size:.95rem}
+		code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.9em}
+		footer{color:var(--muted);font-size:.82rem;margin-top:2em}
+		</style></head>
+		<body><main>
+		<h1>APIs on this server</h1>
+		<p class="sub">Developer-first compliance APIs, self-hosted behind a shared gateway.</p>
+		<a class="card" href="/cbam/">
+		<h2>/cbam/ — CBAM Embedded Emissions API</h2>
+		<p>CN code + origin + tonnage &rarr; embedded emissions, CBAM certificates owed and their cost, with a per-line audit trail. <code>Regulation (EU) 2023/956</code></p>
+		</a>
+		<a class="card" href="/c2pa/">
+		<h2>/c2pa/ — EU AI Act Provenance &amp; Label API</h2>
+		<p>Read, verify and report C2PA Content Credentials on any uploaded file. Prove you checked; flag what arrived unlabelled. <code>Article 50</code></p>
+		</a>
+		<a class="card" href="/eudr/">
+		<h2>/eudr/ — EUDR Geolocation &amp; Due-Diligence API</h2>
+		<p>Per-plot deforestation-free checks tied to coordinates, plus TRACES-ready Due Diligence Statements. <code>Regulation (EU) 2023/1115</code></p>
+		</a>
+		<footer>Not legal advice. Not official EU services. See each project's disclaimer.</footer>
+		</main></body></html>
+		` 200
+	}
+
+	handle {
+		respond "Not found. Available: /cbam/  /c2pa/  /eudr/" 404
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+{$SITE_ADDRESS::80} {
+	import project_routes
+}

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CBAM Embedded Emissions API</title>
+  <meta name="description" content="Take a CN code, an origin country and a tonnage; get embedded emissions, CBAM certificates owed and their cost — with an audit trail per declaration line. Free Commission data." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="hero">
+  <h1>CBAM Embedded Emissions API</h1>
+  <p class="tagline">
+    Take a <strong>CN code</strong>, an <strong>origin country</strong> and a <strong>tonnage</strong>,
+    and get back the <strong>embedded emissions</strong>, the <strong>CBAM certificates owed</strong>
+    and <strong>what they cost</strong> — with a <strong>defensible audit trail per line</strong>.
+  </p>
+  <p class="badges">
+    <span class="badge">Definitive regime · from 1 Jan 2026</span>
+    <span class="badge">Free Commission data</span>
+    <span class="badge">$0 lookup + arithmetic</span>
+    <span class="badge good">Public &amp; free</span>
+  </p>
+</header>
+
+<main>
+  <section class="callout warn">
+    <strong>Not legal advice. Not the official EU CBAM registry.</strong> Figures use
+    <strong>published default values</strong> and are estimates for the declarant's own use.
+    Verified actual emissions require an <strong>accredited verifier</strong>. The declarant is
+    responsible for the CBAM declaration.
+  </section>
+
+  <section>
+    <h2>Live calculator</h2>
+    <p>Runs entirely in your browser using this project's reference data — no request leaves the page.</p>
+    <form id="calc" class="calc">
+      <label>CN code
+        <input id="cnCode" type="text" value="72071110" inputmode="numeric" />
+      </label>
+      <label>Origin (ISO2)
+        <input id="origin" type="text" value="IN" maxlength="2" />
+      </label>
+      <label>Tonnes
+        <input id="tonnes" type="number" value="120" min="0" step="0.01" />
+      </label>
+      <button type="submit">Calculate</button>
+    </form>
+    <div id="result" class="result" hidden></div>
+  </section>
+
+  <section>
+    <h2>Call the API</h2>
+    <pre><code>curl -s -X POST https://apis.allanninal.dev/cbam/v1/calculate \
+  -H "content-type: application/json" \
+  -d '{"cnCode":"72071110","originCountry":"IN","tonnes":120}'</code></pre>
+    <p>Optional <code>Authorization: Bearer &lt;key&gt;</code> unlocks a higher rate budget and
+    retained calculation history. Bulk: <code>POST /cbam/v1/declarations/calculate</code> with
+    <code>{ "lines": [ … ] }</code>.</p>
+  </section>
+
+  <section>
+    <h2>Reference data (static, no auth)</h2>
+    <ul class="links">
+      <li><a href="api/v1/index.json">/api/v1/index.json</a> — endpoint catalogue</li>
+      <li><a href="api/v1/meta.json">/api/v1/meta.json</a> — regulation, dates, dataset versions</li>
+      <li><a href="api/v1/sectors.json">/api/v1/sectors.json</a> — the six in-scope sectors</li>
+      <li><a href="api/v1/cn-codes.json">/api/v1/cn-codes.json</a> — CN code → CBAM good</li>
+      <li><a href="api/v1/default-values.json">/api/v1/default-values.json</a> — default values (tCO2e/t)</li>
+      <li><a href="api/v1/country-factors.json">/api/v1/country-factors.json</a> — country factors</li>
+      <li><a href="api/v1/carbon-price.json">/api/v1/carbon-price.json</a> — cached EU ETS price</li>
+      <li><a href="openapi.yaml">openapi.yaml</a> — OpenAPI 3.1</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Code MIT · data reproduced from free European Commission publications with attribution.
+    Regulation (EU) 2023/956 (CBAM). See DISCLAIMER.</p>
+  </footer>
+</main>
+
+<script type="module">
+  // Load reference datasets + the shared calculation engine client-side, so the
+  // live calculator produces the exact same figure + audit trail as the API.
+  import { calculateLine } from "./lib/calculate.mjs";
+
+  const $ = (id) => document.getElementById(id);
+  const result = $("result");
+
+  async function loadDatasets() {
+    const [cnCodes, defaultValues, countryFactors, sectors, meta, carbonPrice] = await Promise.all([
+      fetch("api/v1/cn-codes.json").then((r) => r.json()),
+      fetch("api/v1/default-values.json").then((r) => r.json()),
+      fetch("api/v1/country-factors.json").then((r) => r.json()),
+      fetch("api/v1/sectors.json").then((r) => r.json()),
+      fetch("api/v1/meta.json").then((r) => r.json()),
+      fetch("api/v1/carbon-price.json").then((r) => r.json())
+    ]);
+    return { datasets: { cnCodes, defaultValues, countryFactors, sectors, meta }, carbonPrice };
+  }
+
+  const ready = loadDatasets().catch((e) => { console.error(e); return null; });
+
+  $("calc").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const ctx = await ready;
+    if (!ctx) { result.hidden = false; result.textContent = "Failed to load reference data."; return; }
+    const price = { ...ctx.carbonPrice, stale: false };
+    const r = calculateLine(
+      { cnCode: $("cnCode").value, originCountry: $("origin").value, tonnes: Number($("tonnes").value) },
+      ctx.datasets, price
+    );
+    result.hidden = false;
+    const money = (n) => "€" + n.toLocaleString("en-IE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    result.innerHTML = r.inScope
+      ? `<h3>${r.cbamGood} <span class="tag">${r.sector}</span></h3>
+         <div class="grid">
+           <div><span>Embedded emissions</span><strong>${r.embeddedEmissions.value} tCO2e</strong></div>
+           <div><span>Certificates owed</span><strong>${r.certificatesOwed}</strong></div>
+           <div><span>Carbon price</span><strong>${money(r.carbonPrice.value)}/t <small>(${r.carbonPrice.asOf})</small></strong></div>
+           <div><span>Cost</span><strong>${money(r.cost.value)}</strong></div>
+         </div>
+         <details><summary>Audit trail</summary><pre>${JSON.stringify(r.auditTrail, null, 2)}</pre></details>`
+      : `<h3>Not in scope <span class="tag">${r.reason}</span></h3>
+         <p>${r.reason === "below-de-minimis"
+             ? "Below the 50-tonne de-minimis threshold — no certificates owed. Indicative emissions: " + r.embeddedEmissions.value + " tCO2e."
+             : "This CN code is not mapped to a CBAM Annex I good."}</p>`;
+  });
+</script>
+</body>
+</html>

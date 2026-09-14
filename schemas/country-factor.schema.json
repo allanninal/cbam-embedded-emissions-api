@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/country-factor.schema.json",
+  "title": "CBAM country adjustment factors",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source", "effectiveDate", "defaultFactor", "factors"],
+  "properties": {
+    "version": { "type": "string" },
+    "source": { "type": "string" },
+    "effectiveDate": { "type": "string", "format": "date" },
+    "note": { "type": "string" },
+    "defaultFactor": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Factor applied to the default value when the origin country is not individually listed."
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["iso2", "factor"],
+        "properties": {
+          "iso2": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "name": { "type": "string" },
+          "factor": { "type": "number", "minimum": 0 },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

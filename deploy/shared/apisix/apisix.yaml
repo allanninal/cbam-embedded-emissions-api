@@ -1,0 +1,310 @@
+#
+# Apache APISIX standalone route table — the SHARED gateway for all APIs on this
+# server. One upstream + route block per project. Rate-limit counters live in
+# SHARED Redis (policy: redis), namespaced per route via redis_prefix, on Redis
+# DB 1 (gateway counters separate from app data on DB 0).
+#
+# __REDIS_PASSWORD__ is substituted at container start by entrypoint.sh — the real
+# secret is never committed.
+#
+# Isolation between co-located projects:
+#   project | path prefix | upstream         | gateway redis_prefix (DB 1)
+#   --------|-------------|------------------|----------------------------
+#   cbam    | /cbam       | cbam-api:8792    | cbam:gw:
+#   c2pa    | /c2pa       | c2pa-api:8790    | c2pa:gw:
+#   eudr    | /eudr       | eudr-api:8787    | eudr:gw:
+#
+routes:
+  #
+  # ================= CBAM embedded-emissions API =================
+  #
+  # ---- CBAM: static reference API (FREE, not rate limited) ----
+  - id: cbam-static
+    uri: /cbam/api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "cbam-api:8792": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/cbam/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- CBAM: compute API (rate limited via shared Redis) ----
+  - id: cbam-compute
+    uri: /cbam/v1/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "cbam-api:8792": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/cbam/(.*)", "/$1"]
+      # Per-client gateway rate limit keyed on the REAL client IP (resolved by
+      # real-ip from the trusted proxy). We deliberately do NOT key on
+      # $http_authorization: an attacker could rotate that header to mint unlimited
+      # buckets. Per-API-key budgeting is enforced by the app against its key store.
+      limit-count:
+        count: 60
+        time_window: 60
+        rejected_code: 429
+        rejected_msg: "rate limit exceeded (gateway)"
+        key_type: "var"
+        key: "remote_addr"
+        policy: redis
+        redis_host: "shared-redis"
+        redis_port: 6379
+        redis_password: "__REDIS_PASSWORD__"
+        redis_database: 1
+        redis_prefix: "cbam:gw:"
+        show_limit_quota_header: true
+        allow_degradation: true    # fail-open if Redis is unreachable
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- CBAM: docs homepage + static site assets (FREE) ----
+  # Catch-all for everything under /cbam/ not matched by the more specific routes
+  # above (APISIX picks the most specific match). Serves index.html, styles.css,
+  # the bundled lib, openapi.yaml from the app's express.static (dist/).
+  - id: cbam-site
+    uri: /cbam/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "cbam-api:8792": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/cbam/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # Redirect bare /cbam -> /cbam/ so the homepage's relative asset links resolve.
+  - id: cbam-root-redirect
+    uri: /cbam
+    plugins:
+      redirect:
+        uri: /cbam/
+        ret_code: 308
+    upstream:
+      type: roundrobin
+      nodes:
+        "cbam-api:8792": 1
+
+  #
+  # ================= C2PA provenance API (sibling project) =================
+  #
+  - id: c2pa-static
+    uri: /c2pa/api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "c2pa-api:8790": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/c2pa/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: c2pa-compute
+    uri: /c2pa/v1/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "c2pa-api:8790": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/c2pa/(.*)", "/$1"]
+      limit-count:
+        count: 60
+        time_window: 60
+        rejected_code: 429
+        rejected_msg: "rate limit exceeded (gateway)"
+        key_type: "var"
+        key: "remote_addr"
+        policy: redis
+        redis_host: "shared-redis"
+        redis_port: 6379
+        redis_password: "__REDIS_PASSWORD__"
+        redis_database: 1
+        redis_prefix: "c2pa:gw:"
+        show_limit_quota_header: true
+        allow_degradation: true
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: c2pa-site
+    uri: /c2pa/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "c2pa-api:8790": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/c2pa/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: c2pa-root-redirect
+    uri: /c2pa
+    plugins:
+      redirect:
+        uri: /c2pa/
+        ret_code: 308
+    upstream:
+      type: roundrobin
+      nodes:
+        "c2pa-api:8790": 1
+
+  #
+  # ================= EUDR API (sibling project) =================
+  #
+  - id: eudr-static
+    uri: /eudr/api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "eudr-api:8787": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/eudr/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: eudr-compute
+    uri: /eudr/v1/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "eudr-api:8787": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/eudr/(.*)", "/$1"]
+      limit-count:
+        count: 60
+        time_window: 60
+        rejected_code: 429
+        rejected_msg: "rate limit exceeded (gateway)"
+        key_type: "var"
+        key: "remote_addr"
+        policy: redis
+        redis_host: "shared-redis"
+        redis_port: 6379
+        redis_password: "__REDIS_PASSWORD__"
+        redis_database: 1
+        redis_prefix: "eudr:gw:"
+        show_limit_quota_header: true
+        allow_degradation: true
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: eudr-site
+    uri: /eudr/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "eudr-api:8787": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/eudr/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  - id: eudr-root-redirect
+    uri: /eudr
+    plugins:
+      redirect:
+        uri: /eudr/
+        ret_code: 308
+    upstream:
+      type: roundrobin
+      nodes:
+        "eudr-api:8787": 1
+
+  #
+  # ---------------- Template for a FUTURE API ----------------
+  # Copy a compute block, change id/uri/nodes and redis_prefix, then reload APISIX.
+  #
+
+#END

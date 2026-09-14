@@ -1,0 +1,17 @@
+{
+  "name": "@cbam/server",
+  "version": "1.0.0",
+  "description": "Self-hosted CBAM embedded-emissions calculator API (Node/Express) — per-line calculation + audit trail, bulk declaration, retained calculation history; SQLite for keys/usage/records, shared-Redis rate limiting.",
+  "type": "module",
+  "main": "src/server.mjs",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "seed-key": "node src/seed-key.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2",
+    "redis": "^4.7.0"
+  }
+}

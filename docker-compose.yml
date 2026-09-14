@@ -1,0 +1,135 @@
+# CBAM embedded-emissions API — shared-server friendly deployment.
+#
+# Runs on the SAME server as the sibling EUDR and C2PA APIs and REUSES their
+# shared services:
+#   - one shared Caddy edge (owns 80/443, routes by path prefix),
+#   - one shared Apache APISIX gateway (routing, Redis rate limiting, CORS),
+#   - one shared Redis.
+# This project does NOT own Redis or the gateway; it connects with a
+# project-specific key prefix (cbam:rl: app, cbam:gw: gateway) and is mounted
+# under the /cbam path prefix.
+#
+# Prereqs on the server (shared stack, started once — see the EUDR project's
+# deploy/shared/ or this repo's deploy/shared/):
+#   docker network create shared-net
+#   docker compose -f deploy/shared/docker-compose.yml up -d   # redis + apisix
+#
+# Resource limits keep this project from starving co-located projects.
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        BASE_PATH: /cbam
+    image: cbam-api:latest
+    container_name: cbam-api
+    restart: unless-stopped
+    environment:
+      PORT: "8792"
+      # Public/free offering: anonymous access allowed. Per-IP rate limiting is
+      # enforced at the SHARED gateway (APISIX limit-count), so the app's own
+      # window limiter is disabled here to avoid double Redis work. The app still
+      # enforces per-API-key daily quota (SQLite) for issued keys.
+      REQUIRE_KEY: "false"
+      RATE_LIMIT: "false"
+      # Shared Redis (own stack). DB /0 + project prefix isolate us from EUDR/C2PA.
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@shared-redis:6379/0"
+      REDIS_PREFIX: "cbam:rl:"
+      # Trust exactly one proxy hop (Caddy). Prevents X-Forwarded-For spoofing.
+      TRUST_PROXY: "1"
+      STATIC_DIR: /app/dist
+      DB_PATH: /data/cbam.sqlite
+      DATA_DIR: /app/data
+      # Scheduled EU ETS carbon-price refresh interval (ms). 0 disables (default).
+      CARBON_PRICE_REFRESH_MS: "${CARBON_PRICE_REFRESH_MS:-0}"
+    volumes:
+      - cbam-data:/data
+    # NOT published to the host: reachable only via the gateway
+    # (Caddy -> APISIX -> api) over the internal network.
+    expose:
+      - "8792"
+    networks:
+      - cbam-net
+      - shared-net
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 384M
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8792/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2.8
+    container_name: shared-caddy
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: "${SITE_ADDRESS:-:80}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - cbam-net
+      - shared-net
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - api
+
+  # Daily consistent SQLite backups of the keys/usage/records DB (online .backup).
+  backup:
+    image: alpine:3.20
+    container_name: cbam-backup
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      DB_PATH: /data/cbam.sqlite
+      BACKUP_DIR: /backups
+      KEEP: "14"
+      INTERVAL_SECONDS: "86400"
+    entrypoint: ["/bin/sh", "-c", "apk add --no-cache sqlite >/dev/null && exec /bin/sh /opt/backup.sh"]
+    volumes:
+      - cbam-data:/data:ro
+      - cbam-backups:/backups
+      - ./deploy/backup/backup.sh:/opt/backup.sh:ro
+    networks:
+      - cbam-net
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 96M
+
+networks:
+  cbam-net:
+    driver: bridge
+  shared-net:
+    external: true
+
+volumes:
+  cbam-data:
+  cbam-backups:
+  caddy-data:
+  caddy-config:

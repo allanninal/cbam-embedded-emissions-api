@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Validate · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      # better-sqlite3 is native; it compiles on Node 20 in CI so the SQLite-backed
+      # paths are exercised. Tests otherwise use in-memory fakes.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate reference data (build gate)
+        run: npm run validate
+
+      - name: Run tests (unit + integration)
+        run: npm test
+
+      - name: Build static tier
+        run: npm run build
+
+  docker:
+    name: Build image · E2E smoke
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build --build-arg BASE_PATH=/cbam -t cbam-api:ci .
+
+      - name: Run container
+        run: |
+          docker run -d --name cbam -e RATE_LIMIT=false -p 8792:8792 cbam-api:ci
+          # Wait for health.
+          for i in $(seq 1 30); do
+            if docker exec cbam node -e "fetch('http://127.0.0.1:8792/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+              echo "healthy"; break
+            fi
+            sleep 1
+          done
+
+      - name: Smoke — static reference endpoint
+        run: |
+          curl -fsS http://127.0.0.1:8792/api/v1/index.json | head -c 400
+          echo
+
+      - name: Smoke — calculate a line
+        run: |
+          body=$(curl -fsS -X POST http://127.0.0.1:8792/v1/calculate \
+            -H "content-type: application/json" \
+            -d '{"cnCode":"72071110","originCountry":"IN","tonnes":120}')
+          echo "$body"
+          echo "$body" | grep -q '"certificatesOwed"'
+          echo "$body" | grep -q '"auditTrail"'
+
+      - name: Smoke — below-de-minimis and out-of-scope
+        run: |
+          curl -fsS -X POST http://127.0.0.1:8792/v1/calculate -H "content-type: application/json" \
+            -d '{"cnCode":"72071110","originCountry":"IN","tonnes":10}' | grep -q '"below-de-minimis"'
+          curl -fsS -X POST http://127.0.0.1:8792/v1/calculate -H "content-type: application/json" \
+            -d '{"cnCode":"99999999","originCountry":"IN","tonnes":100}' | grep -q '"out-of-scope"'
+
+      - name: Container logs (always)
+        if: always()
+        run: docker logs cbam || true
+
+      - name: Teardown
+        if: always()
+        run: docker rm -f cbam || true

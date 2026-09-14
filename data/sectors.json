@@ -1,0 +1,37 @@
+{
+  "version": "sectors-2026.1",
+  "source": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+  "effectiveDate": "2026-01-01",
+  "sectors": [
+    {
+      "id": "iron-steel",
+      "name": "Iron and steel",
+      "scopeNote": "Iron and steel products in CBAM Annex I, including semi-finished and certain downstream products."
+    },
+    {
+      "id": "aluminium",
+      "name": "Aluminium",
+      "scopeNote": "Unwrought aluminium and certain aluminium products in CBAM Annex I."
+    },
+    {
+      "id": "cement",
+      "name": "Cement",
+      "scopeNote": "Cement clinker, cements and related products in CBAM Annex I."
+    },
+    {
+      "id": "fertilisers",
+      "name": "Fertilisers",
+      "scopeNote": "Nitric acid, ammonia, nitrogenous and mixed fertilisers in CBAM Annex I."
+    },
+    {
+      "id": "hydrogen",
+      "name": "Hydrogen",
+      "scopeNote": "Hydrogen in CBAM Annex I."
+    },
+    {
+      "id": "electricity",
+      "name": "Electricity",
+      "scopeNote": "Imported electricity in CBAM Annex I (priced per MWh; tonnage-based lines out of scope for the mass calculator)."
+    }
+  ]
+}

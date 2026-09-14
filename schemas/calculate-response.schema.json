@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/calculate-response.schema.json",
+  "title": "CBAM calculate response (single line)",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "cnCode", "originCountry", "tonnes", "inScope", "basis",
+    "embeddedEmissions", "certificatesOwed", "carbonPrice", "cost",
+    "auditTrail", "assessedAt", "datasetVersions"
+  ],
+  "properties": {
+    "cnCode": { "type": "string" },
+    "originCountry": { "type": "string" },
+    "tonnes": { "type": "number" },
+    "cbamGood": { "type": ["string", "null"] },
+    "sector": {
+      "type": ["string", "null"],
+      "enum": ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity", null]
+    },
+    "inScope": { "type": "boolean" },
+    "reason": {
+      "type": ["string", "null"],
+      "enum": ["out-of-scope", "below-de-minimis", null]
+    },
+    "basis": { "type": "string", "enum": ["default-values"] },
+    "embeddedEmissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "const": "tCO2e" }
+      }
+    },
+    "certificatesOwed": { "type": "integer", "minimum": 0 },
+    "carbonPrice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "currency", "asOf", "source"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "const": "EUR" },
+        "asOf": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "currency"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "const": "EUR" }
+      }
+    },
+    "auditTrail": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step"],
+        "properties": {
+          "step": {
+            "type": "string",
+            "enum": ["cn-mapping", "default-value", "country-factor", "emissions", "certificates", "cost"]
+          },
+          "source": { "type": "string" },
+          "datasetVersion": { "type": "string" }
+        }
+      }
+    },
+    "assessedAt": { "type": "string" },
+    "datasetVersions": {
+      "type": "object",
+      "required": ["cnMapping", "defaultValues", "countryFactors", "carbonPrice", "stale"],
+      "properties": {
+        "cnMapping": { "type": "string" },
+        "defaultValues": { "type": "string" },
+        "countryFactors": { "type": "string" },
+        "carbonPrice": { "type": "string" },
+        "stale": { "type": "boolean" }
+      }
+    }
+  }
+}

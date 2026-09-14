@@ -1,0 +1,174 @@
+openapi: 3.1.0
+info:
+  title: CBAM Embedded Emissions API
+  version: "1.0.0"
+  description: >
+    Developer-first API for the EU Carbon Border Adjustment Mechanism (Regulation (EU)
+    2023/956, "CBAM"). Take a CN code, an origin country and a tonnage, and get back the
+    embedded emissions, the CBAM certificates owed and their cost — with a defensible audit
+    trail per declaration line. Default-value estimate only; not legal advice and not the
+    official EU CBAM registry. Verified actual emissions require an accredited verifier.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: https://apis.allanninal.dev/cbam
+    description: Shared server (behind Caddy → APISIX), path prefix /cbam
+tags:
+  - name: compute
+    description: Public/free, rate limited. Anonymous allowed; optional API key.
+  - name: static
+    description: Public reference data, not rate limited.
+paths:
+  /v1/calculate:
+    post:
+      tags: [compute]
+      summary: Calculate a single CBAM line
+      description: CN code + origin country + tonnage → embedded emissions, certificates owed, cost, and a per-line audit trail.
+      security: [{}, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CalculateRequest" }
+            examples:
+              steel:
+                value: { cnCode: "72071110", originCountry: "IN", tonnes: 120 }
+      responses:
+        "200":
+          description: Calculation result with audit trail.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalculateResponse" }
+        "400": { description: Invalid input (bad CN code, ISO2, or tonnes). }
+        "429": { description: Rate limit exceeded. }
+  /v1/declarations/calculate:
+    post:
+      tags: [compute]
+      summary: Calculate a whole declaration (bulk lines)
+      description: Per-line results plus an aggregate. Partial results on per-line errors. Cost = 1 unit per line.
+      security: [{}, { bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeclarationRequest" }
+      responses:
+        "200":
+          description: Per-line results + aggregate.
+        "400": { description: lines[] required or exceeds max batch size. }
+        "429": { description: Rate limit exceeded. }
+  /v1/calculations/{recordId}:
+    get:
+      tags: [compute]
+      summary: Fetch a retained calculation record
+      description: Available to API-key holders; anonymous callers receive the record inline in the calculate response but no server-side retention.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: recordId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: The calculation record.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalculationRecord" }
+        "404": { description: Not found. }
+  /v1/usage:
+    get:
+      tags: [compute]
+      summary: Current key usage and quota
+      security: [{}, { bearerAuth: [] }]
+      responses:
+        "200": { description: Usage counters. }
+  /api/v1/index.json:
+    get: { tags: [static], summary: Endpoint catalogue, responses: { "200": { description: OK } } }
+  /api/v1/meta.json:
+    get: { tags: [static], summary: Regulation metadata, dates, dataset versions, responses: { "200": { description: OK } } }
+  /api/v1/sectors.json:
+    get: { tags: [static], summary: In-scope CBAM sectors, responses: { "200": { description: OK } } }
+  /api/v1/cn-codes.json:
+    get: { tags: [static], summary: CN code → CBAM good mapping, responses: { "200": { description: OK } } }
+  /api/v1/default-values.json:
+    get: { tags: [static], summary: Default embedded-emission values, responses: { "200": { description: OK } } }
+  /api/v1/country-factors.json:
+    get: { tags: [static], summary: Country adjustment factors, responses: { "200": { description: OK } } }
+  /api/v1/carbon-price.json:
+    get: { tags: [static], summary: Current cached EU ETS carbon price, responses: { "200": { description: OK } } }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Optional API key. Anonymous access is allowed; a key unlocks a higher budget and retained history.
+  schemas:
+    CalculateRequest:
+      type: object
+      required: [cnCode, originCountry, tonnes]
+      properties:
+        cnCode: { type: string, example: "72071110" }
+        originCountry: { type: string, example: "IN" }
+        tonnes: { type: number, exclusiveMinimum: 0, example: 120 }
+        importYear: { type: integer, example: 2026 }
+        carbonPrice: { type: number, nullable: true, description: "Optional EUR/tCO2e override for what-if pricing." }
+    CalculateResponse:
+      type: object
+      properties:
+        cbamGood: { type: string, nullable: true }
+        sector: { type: string, nullable: true }
+        inScope: { type: boolean }
+        reason: { type: string, nullable: true, enum: [out-of-scope, below-de-minimis, null] }
+        basis: { type: string, enum: [default-values] }
+        embeddedEmissions:
+          type: object
+          properties:
+            value: { type: number }
+            unit: { type: string, example: tCO2e }
+        certificatesOwed: { type: integer }
+        carbonPrice:
+          type: object
+          properties:
+            value: { type: number }
+            currency: { type: string, example: EUR }
+            asOf: { type: string }
+            source: { type: string }
+        cost:
+          type: object
+          properties:
+            value: { type: number }
+            currency: { type: string, example: EUR }
+        auditTrail:
+          type: array
+          items: { type: object }
+        assessedAt: { type: string }
+        datasetVersions: { type: object }
+        recordId: { type: string }
+    DeclarationRequest:
+      type: object
+      required: [lines]
+      properties:
+        importYear: { type: integer }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [cnCode, originCountry, tonnes]
+            properties:
+              lineId: { type: string, nullable: true }
+              cnCode: { type: string }
+              originCountry: { type: string }
+              tonnes: { type: number, exclusiveMinimum: 0 }
+    CalculationRecord:
+      type: object
+      properties:
+        recordId: { type: string }
+        input: { type: object }
+        cbamGood: { type: string, nullable: true }
+        sector: { type: string, nullable: true }
+        certificatesOwed: { type: integer }
+        cost: { type: number }
+        currency: { type: string, example: EUR }
+        datasetVersions: { type: object }
+        calculatedAt: { type: string }

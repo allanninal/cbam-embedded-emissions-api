@@ -1,0 +1,28 @@
+{
+  "version": "dv-2026.1",
+  "source": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+  "effectiveDate": "2026-01-01",
+  "note": "Representative default embedded-emission values (tCO2e per tonne of product) keyed by CBAM good. These are placeholders illustrating the calculation shape and MUST be replaced with the exact values from the current Commission default-values annex before production use.",
+  "values": [
+    { "good": "Semi-finished products of iron/non-alloy steel", "sector": "iron-steel", "factor": 2.13, "unit": "tCO2e/t" },
+    { "good": "Semi-finished products of iron/non-alloy steel, other", "sector": "iron-steel", "factor": 2.13, "unit": "tCO2e/t" },
+    { "good": "Flat-rolled products of iron/non-alloy steel, in coils, hot-rolled", "sector": "iron-steel", "factor": 2.20, "unit": "tCO2e/t" },
+    { "good": "Bars and rods of iron/non-alloy steel", "sector": "iron-steel", "factor": 2.00, "unit": "tCO2e/t" },
+    { "good": "Sheet piling of iron or steel", "sector": "iron-steel", "factor": 2.05, "unit": "tCO2e/t" },
+    { "good": "Structures and parts of structures, of iron or steel", "sector": "iron-steel", "factor": 2.10, "unit": "tCO2e/t" },
+    { "good": "Unwrought aluminium, not alloyed", "sector": "aluminium", "factor": 6.87, "unit": "tCO2e/t" },
+    { "good": "Unwrought aluminium alloys", "sector": "aluminium", "factor": 7.05, "unit": "tCO2e/t" },
+    { "good": "Aluminium bars, rods and profiles, not alloyed", "sector": "aluminium", "factor": 7.20, "unit": "tCO2e/t" },
+    { "good": "Aluminium plates, sheets and strip, rectangular, not alloyed", "sector": "aluminium", "factor": 7.30, "unit": "tCO2e/t" },
+    { "good": "Cement clinkers", "sector": "cement", "factor": 0.86, "unit": "tCO2e/t" },
+    { "good": "Portland cement, other", "sector": "cement", "factor": 0.66, "unit": "tCO2e/t" },
+    { "good": "Aluminous cement", "sector": "cement", "factor": 0.72, "unit": "tCO2e/t" },
+    { "good": "Nitric acid; sulphonitric acids", "sector": "fertilisers", "factor": 1.55, "unit": "tCO2e/t" },
+    { "good": "Anhydrous ammonia", "sector": "fertilisers", "factor": 2.35, "unit": "tCO2e/t" },
+    { "good": "Ammonia in aqueous solution", "sector": "fertilisers", "factor": 1.20, "unit": "tCO2e/t" },
+    { "good": "Urea, nitrogen content > 45% by weight of dry product", "sector": "fertilisers", "factor": 1.85, "unit": "tCO2e/t" },
+    { "good": "Ammonium dihydrogenorthophosphate (mono-ammonium phosphate)", "sector": "fertilisers", "factor": 1.35, "unit": "tCO2e/t" },
+    { "good": "Hydrogen", "sector": "hydrogen", "factor": 9.60, "unit": "tCO2e/t" },
+    { "good": "Electrical energy", "sector": "electricity", "factor": 0.50, "unit": "tCO2e/t", "note": "Electricity is normally priced per MWh; this per-tonne value is not meaningful for mass-based lines." }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "recordId": "01JD8ZK9MABCDEF0123456789",
+  "input": { "cnCode": "72071110", "originCountry": "IN", "tonnes": 120, "importYear": 2026 },
+  "cbamGood": "Semi-finished products of iron/non-alloy steel",
+  "sector": "iron-steel",
+  "inScope": true,
+  "embeddedEmissions": 255.6,
+  "certificatesOwed": 256,
+  "carbonPrice": { "value": 72.14, "asOf": "2026-09-11" },
+  "cost": 18467.84,
+  "currency": "EUR",
+  "datasetVersions": {
+    "cnMapping": "cn-2026.1",
+    "defaultValues": "dv-2026.1",
+    "countryFactors": "cf-2026.1",
+    "carbonPrice": "2026-09-11"
+  },
+  "calculatedAt": "2026-09-14T00:00:00Z",
+  "service": { "name": "cbam-embedded-emissions-api", "version": "1.0.0" }
+}

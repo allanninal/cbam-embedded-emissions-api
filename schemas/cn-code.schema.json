@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/cn-code.schema.json",
+  "title": "CBAM CN-code mapping table",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source", "effectiveDate", "codes"],
+  "properties": {
+    "version": { "type": "string" },
+    "source": { "type": "string" },
+    "effectiveDate": { "type": "string", "format": "date" },
+    "note": { "type": "string" },
+    "defaultCountryFactor": { "type": "number" },
+    "codes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cnCode", "good", "sector", "inScope"],
+        "properties": {
+          "cnCode": { "type": "string", "pattern": "^[0-9]{6,10}$" },
+          "good": { "type": "string" },
+          "sector": {
+            "type": "string",
+            "enum": ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"]
+          },
+          "inScope": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

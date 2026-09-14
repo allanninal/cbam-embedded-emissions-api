@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://apis.allanninal.dev/cbam/api/v1/schemas/calculate-request.schema.json",
+  "title": "CBAM calculate request (single line)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cnCode", "originCountry", "tonnes"],
+  "properties": {
+    "cnCode": {
+      "type": "string",
+      "description": "Combined Nomenclature code of the imported good (6-10 digits; spaces/dots ignored).",
+      "pattern": "^[0-9 .]{4,14}$"
+    },
+    "originCountry": {
+      "type": "string",
+      "description": "Country of origin as an ISO 3166-1 alpha-2 code.",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "tonnes": {
+      "type": "number",
+      "description": "Net mass of the imported good, in metric tonnes.",
+      "exclusiveMinimum": 0
+    },
+    "importYear": {
+      "type": "integer",
+      "description": "Year the goods are/were imported; selects the applicable dataset version window.",
+      "minimum": 2026,
+      "maximum": 2100
+    },
+    "carbonPrice": {
+      "type": ["number", "null"],
+      "description": "Optional explicit EU ETS carbon price (EUR/tCO2e) for what-if pricing. When omitted, the cached published price is used.",
+      "exclusiveMinimum": 0
+    }
+  }
+}
