@@ -19,6 +19,21 @@
 (project_routes) {
 	encode gzip
 
+	# --- Security headers + banner stripping (applied to every response) ---
+	header {
+		# HSTS: force HTTPS for 1 year incl. subdomains. Safe once TLS is live.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Stop MIME sniffing, deny framing, limit referrer + powerful features.
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Cross-Origin-Resource-Policy "cross-origin"
+		# Remove software/version banners that aid targeted attacks.
+		-Server
+		-X-Powered-By
+		defer
+	}
+
 	handle /robots.txt {
 		header Content-Type text/plain
 		respond "User-agent: *
