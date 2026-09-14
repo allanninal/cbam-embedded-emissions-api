@@ -134,6 +134,12 @@ npm run validate
 
 The importer merges a good-level fallback (blank-country rows) with per-country overrides
 (`byCountry`), matching the calculator's model. Also review:
+- the **CN-code scope** (`data/cn-codes.json`) — covers all six sectors' Annex I headings
+  (iron & steel chapter 72 + 7301–7311/7318/7326 + 2601 12; aluminium 7601/7603–7614/7616;
+  cement 2507 00 80 + 2523; fertilisers 2808/2814/2834 21/3102/3105; hydrogen 2804 10;
+  electricity 2716), with `exclusions` for ferro-alloys (7202), scrap (7204) and 3105 60. A
+  production deployment should expand each in-scope heading to its full set of 8-digit CN
+  subheadings;
 - the **mark-up** table (`data/markups.json`) — 10/20/30% by year for iron-steel/aluminium/cement,
   1% fertilisers;
 - **Annex III** exemptions in `data/country-factors.json`;

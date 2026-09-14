@@ -11,6 +11,7 @@
     "sourceUrl": { "type": "string" },
     "effectiveDate": { "type": "string", "format": "date" },
     "note": { "type": "string" },
+    "exclusions": { "type": "array", "items": { "type": "string" } },
     "defaultCountryFactor": { "type": "number" },
     "codes": {
       "type": "array",

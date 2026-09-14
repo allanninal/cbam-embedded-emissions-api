@@ -13,8 +13,8 @@
   "defaultValuesInstrument": "Commission Implementing Regulation (EU) 2025/2621 (definitive-period default values; corrected by (EU) 2026/1740)",
   "benchmarksInstrument": "Commission Implementing Regulation (EU) 2025/2620",
   "datasetVersions": {
-    "cnMapping": "cn-2026.1",
-    "defaultValues": "dv-2026.1",
+    "cnMapping": "cn-2026.2",
+    "defaultValues": "dv-2026.2",
     "countryFactors": "cf-2026.1",
     "markups": "mk-2026.1",
     "carbonPrice": "2026-09-11"
