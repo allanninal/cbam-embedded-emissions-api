@@ -21,7 +21,7 @@
     "inScope": { "type": "boolean" },
     "reason": {
       "type": ["string", "null"],
-      "enum": ["out-of-scope", "below-de-minimis", null]
+      "enum": ["out-of-scope", "below-de-minimis", "exempt-origin", null]
     },
     "basis": { "type": "string", "enum": ["default-values"] },
     "embeddedEmissions": {

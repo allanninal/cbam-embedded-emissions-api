@@ -8,6 +8,7 @@
   "properties": {
     "version": { "type": "string" },
     "source": { "type": "string" },
+    "sourceUrl": { "type": "string" },
     "effectiveDate": { "type": "string", "format": "date" },
     "note": { "type": "string" },
     "values": {

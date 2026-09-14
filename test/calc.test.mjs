@@ -62,6 +62,14 @@ test("out-of-scope CN code: no fabricated emissions", () => {
   assert.equal(r.certificatesOwed, 0);
 });
 
+test("exempt origin (Annex III, country factor 0): not in scope, 0 certificates", () => {
+  const r = calculateLine({ cnCode: "72071110", originCountry: "NO", tonnes: 120 }, ds, cp, opts);
+  assert.equal(r.inScope, false);
+  assert.equal(r.reason, "exempt-origin");
+  assert.equal(r.certificatesOwed, 0);
+  assert.equal(r.cost.value, 0);
+});
+
 test("unknown CN code: out-of-scope", () => {
   const r = calculateLine({ cnCode: "99999999", originCountry: "IN", tonnes: 100 }, ds, cp, opts);
   assert.equal(r.inScope, false);

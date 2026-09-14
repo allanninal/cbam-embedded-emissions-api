@@ -25,7 +25,8 @@ export const fixtureDatasets = {
     defaultFactor: 1.0,
     factors: [
       { iso2: "IN", factor: 1.0 },
-      { iso2: "CN", factor: 1.2 }
+      { iso2: "CN", factor: 1.2 },
+      { iso2: "NO", factor: 0.0 }
     ]
   },
   meta: { deMinimisTonnes: 50, certificateRounding: "round-half-up" }

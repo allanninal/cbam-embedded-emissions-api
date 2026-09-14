@@ -139,6 +139,24 @@ export function calculateLine(input, datasets, carbonPrice, opts = {}) {
     };
   }
 
+  // Exempt origin (country factor 0 ⇒ Annex III country/territory outside CBAM
+  // scope, e.g. EU-ETS participants). No certificates owed; report the indicative
+  // (zero) emissions and a clear reason rather than a misleading in-scope zero.
+  if (countryFactor === 0) {
+    return {
+      ...base,
+      cbamGood: mapping.good,
+      sector: mapping.sector,
+      inScope: false,
+      reason: "exempt-origin",
+      embeddedEmissions: { value: 0, unit: "tCO2e" },
+      certificatesOwed: 0,
+      carbonPrice: carbonPriceBlock(carbonPrice),
+      cost: { value: 0, currency: "EUR" },
+      auditTrail
+    };
+  }
+
   // 4) Embedded emissions (R1.3)
   const emissionsRaw = tonnes * defaultFactor * countryFactor;
   const emissions = round2(emissionsRaw);

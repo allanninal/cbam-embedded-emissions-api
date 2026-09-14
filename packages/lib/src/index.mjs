@@ -11,4 +11,4 @@ export { validateCalculationRecord } from "./validateRecord.mjs";
 
 export const SECTORS = ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"];
 export const AUDIT_STEPS = ["cn-mapping", "default-value", "country-factor", "emissions", "certificates", "cost"];
-export const UNSCOPED_REASONS = ["out-of-scope", "below-de-minimis"];
+export const UNSCOPED_REASONS = ["out-of-scope", "below-de-minimis", "exempt-origin"];

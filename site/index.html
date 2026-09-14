@@ -124,6 +124,8 @@
       : `<h3>Not in scope <span class="tag">${r.reason}</span></h3>
          <p>${r.reason === "below-de-minimis"
              ? "Below the 50-tonne de-minimis threshold — no certificates owed. Indicative emissions: " + r.embeddedEmissions.value + " tCO2e."
+             : r.reason === "exempt-origin"
+             ? "Origin country is outside CBAM scope (Annex III, e.g. an EU ETS participant) — no CBAM certificates owed."
              : "This CN code is not mapped to a CBAM Annex I good."}</p>`;
   });
 </script>

@@ -5,22 +5,27 @@
   "firstAnnualDeclarationDue": "2027-09-30",
   "registryDeclarationCreationOpens": "2026-Q4",
   "deMinimisTonnes": 50,
+  "deMinimisSource": "Regulation (EU) 2025/2083 (Omnibus simplification; 50-tonne mass threshold for iron & steel, aluminium, cement, fertilisers)",
   "sectors": ["iron-steel", "aluminium", "cement", "fertilisers", "hydrogen", "electricity"],
   "certificateDefinition": "1 CBAM certificate = 1 tonne CO2e embedded emissions",
   "certificateRounding": "round-half-up",
   "basis": "default-values",
+  "defaultValuesInstrument": "Commission Implementing Regulation (EU) 2025/2621 (definitive-period default values; corrected by (EU) 2026/1740)",
+  "benchmarksInstrument": "Commission Implementing Regulation (EU) 2025/2620",
   "datasetVersions": {
     "cnMapping": "cn-2026.1",
     "defaultValues": "dv-2026.1",
     "countryFactors": "cf-2026.1",
     "carbonPrice": "2026-09-11"
   },
-  "disclaimer": "Estimation and audit-trail tooling using published default values. Not legal advice. Not the official EU CBAM registry. Verified actual emissions require an accredited verifier.",
+  "disclaimer": "Estimation and audit-trail tooling using published default values. Not legal advice. Not the official EU CBAM registry. The legally binding default values are those set out in Commission Implementing Regulation (EU) 2025/2621; verified actual emissions require an accredited verifier.",
   "sources": {
     "regulation": "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
-    "defaultValues": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
-    "cnCodes": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
-    "countryFactors": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+    "annexIGoods": "https://eur-lex.europa.eu/eli/reg/2023/956/oj (Annex I; CN codes under Regulation (EEC) No 2658/87)",
+    "defaultValues": "https://eur-lex.europa.eu/eli/reg_impl/2025/2621/oj",
+    "benchmarks": "https://eur-lex.europa.eu/eli/reg_impl/2025/2620/oj",
+    "deMinimis": "https://eur-lex.europa.eu/eli/reg/2025/2083/oj",
+    "legislationHub": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-legislation-and-guidance_en",
     "etsPrice": "https://climate.ec.europa.eu/eu-action/eu-emissions-trading-system-eu-ets_en"
   }
 }

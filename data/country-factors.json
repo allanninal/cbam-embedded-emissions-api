@@ -1,10 +1,15 @@
 {
   "version": "cf-2026.1",
-  "source": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+  "source": "Regulation (EU) 2023/956, Annex III (third countries and territories outside the scope of CBAM)",
+  "sourceUrl": "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
   "effectiveDate": "2026-01-01",
-  "note": "Origin-country adjustment factors applied to the default embedded-emission value where the Commission defines a country-specific adjustment. Unlisted countries use defaultFactor. Values here are representative placeholders (1.0 = no adjustment) pending the current Commission adjustment tables.",
+  "note": "Origin-country adjustment applied to the default embedded-emission value. Under CBAM, countries and territories listed in Annex III (those participating in the EU ETS or with a linked system) are OUTSIDE the scope of CBAM — modelled here as factor 0.0 (no certificates owed). All other origin countries use defaultFactor 1.0 (default value applied in full; a producer may instead claim a lower verified actual value via an accredited verifier). This does not model any country-specific default-value variations that the binding methodology may define — reconcile against Commission Implementing Regulation (EU) 2025/2621 before production use.",
   "defaultFactor": 1.0,
   "factors": [
+    { "iso2": "IS", "name": "Iceland", "factor": 0.0, "note": "Annex III — EU ETS participant, outside CBAM scope" },
+    { "iso2": "LI", "name": "Liechtenstein", "factor": 0.0, "note": "Annex III — outside CBAM scope" },
+    { "iso2": "NO", "name": "Norway", "factor": 0.0, "note": "Annex III — EU ETS participant, outside CBAM scope" },
+    { "iso2": "CH", "name": "Switzerland", "factor": 0.0, "note": "Annex III — ETS linked, outside CBAM scope" },
     { "iso2": "CN", "name": "China", "factor": 1.0 },
     { "iso2": "IN", "name": "India", "factor": 1.0 },
     { "iso2": "TR", "name": "Türkiye", "factor": 1.0 },

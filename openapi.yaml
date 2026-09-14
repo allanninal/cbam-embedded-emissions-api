@@ -119,7 +119,7 @@ components:
         cbamGood: { type: string, nullable: true }
         sector: { type: string, nullable: true }
         inScope: { type: boolean }
-        reason: { type: string, nullable: true, enum: [out-of-scope, below-de-minimis, null] }
+        reason: { type: string, nullable: true, enum: [out-of-scope, below-de-minimis, exempt-origin, null] }
         basis: { type: string, enum: [default-values] }
         embeddedEmissions:
           type: object
