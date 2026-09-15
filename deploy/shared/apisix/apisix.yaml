@@ -8,17 +8,126 @@
 # secret is never committed.
 #
 # This is the AUTHORITATIVE shared route table, kept identical across all project
-# repos (cbam / c2pa / eudr). Whichever repo is deployed brings the same routes
-# online. Edit once, copy to the sibling repos' deploy/shared/apisix/apisix.yaml.
+# repos (dpp / cbam / c2pa / eudr). Whichever repo is deployed brings the same
+# routes online. Edit once, copy to the sibling repos'
+# deploy/shared/apisix/apisix.yaml.
 #
 # Isolation between co-located projects:
 #   project | path prefix | upstream         | gateway redis_prefix (DB 1)
 #   --------|-------------|------------------|----------------------------
+#   dpp     | /dpp        | dpp-api:8794     | dpp:gw:
 #   cbam    | /cbam       | cbam-api:8792    | cbam:gw:
 #   c2pa    | /c2pa       | c2pa-api:8790    | c2pa:gw:
 #   eudr    | /eudr       | eudr-api:8787    | eudr:gw:
 #
 routes:
+  #
+  # ================= DPP (Digital Product Passport API) =================
+  #
+  # CORS allows PATCH here (and only here): the DPP API is the one project whose
+  # clients amend an existing record (PATCH /v1/passports/{id}).
+  #
+  # ---- DPP: static reference API (FREE, not rate limited) ----
+  - id: dpp-static
+    uri: /dpp/api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "dpp-api:8794": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/dpp/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PATCH,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- DPP: compute API + JSON resolver (rate limited via shared Redis) ----
+  - id: dpp-compute
+    uri: /dpp/v1/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "dpp-api:8794": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/dpp/(.*)", "/$1"]
+      # Per-client gateway rate limit keyed on the REAL client IP (resolved by
+      # real-ip from the trusted proxy). We deliberately do NOT key on
+      # $http_authorization: an attacker could rotate that header to mint unlimited
+      # buckets. Per-API-key budgeting is enforced by the app against its key store.
+      limit-count:
+        count: 60
+        time_window: 60
+        rejected_code: 429
+        rejected_msg: "rate limit exceeded (gateway)"
+        key_type: "var"
+        key: "remote_addr"
+        policy: redis
+        redis_host: "shared-redis"
+        redis_port: 6379
+        redis_password: "__REDIS_PASSWORD__"
+        redis_database: 1
+        redis_prefix: "dpp:gw:"
+        show_limit_quota_header: true
+        allow_degradation: true    # fail-open if Redis is unreachable
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PATCH,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- DPP: human resolver + docs site (FREE) ----
+  # Catch-all for everything under /dpp/ not matched by the more specific routes
+  # above (APISIX picks the most specific match). Serves index.html, styles.css,
+  # the bundled lib, openapi.yaml from the app's express.static (dist/), plus the
+  # scannable human resolver at /dpp/dpp/{uid} — the URL inside every QR code.
+  - id: dpp-site
+    uri: /dpp/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "dpp-api:8794": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/dpp/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,PATCH,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # Redirect bare /dpp -> /dpp/ so the homepage's relative asset links resolve.
+  - id: dpp-root-redirect
+    uri: /dpp
+    plugins:
+      redirect:
+        uri: /dpp/
+        ret_code: 308
+    upstream:
+      type: roundrobin
+      nodes:
+        "dpp-api:8794": 1
+
   #
   # ================= CBAM embedded-emissions API =================
   #
@@ -123,7 +232,7 @@ routes:
         "cbam-api:8792": 1
 
   #
-  # ================= C2PA provenance API (sibling project) =================
+  # ================= C2PA provenance API =================
   #
   - id: c2pa-static
     uri: /c2pa/api/*
@@ -215,7 +324,7 @@ routes:
         "c2pa-api:8790": 1
 
   #
-  # ================= EUDR API (sibling project) =================
+  # ================= EUDR API =================
   #
   - id: eudr-static
     uri: /eudr/api/*

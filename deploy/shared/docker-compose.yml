@@ -1,5 +1,5 @@
 # SHARED services for this server — deployed ONCE, used by many projects
-# (this CBAM API and the sibling C2PA and EUDR APIs).
+# (the DPP, CBAM, C2PA and EUDR APIs).
 #
 # Owns the single public edge + gateway for the whole server:
 #   - caddy   : the ONLY container binding :80/:443 (TLS, body cap, real IP,
@@ -24,8 +24,8 @@
 # How projects use it:
 #   - join the external network `shared-net`
 #   - connect to host `shared-redis:6379`
-#   - use a PROJECT-SPECIFIC key prefix (cbam:rl:, c2pa:rl:, eudr:rl:) and/or DB
-#     index so keys never collide.
+#   - use a PROJECT-SPECIFIC key prefix (dpp:rl:, cbam:rl:, c2pa:rl:, eudr:rl:)
+#     and/or DB index so keys never collide.
 # Gateway routes for every project live in apisix/apisix.yaml; the landing page
 # + per-prefix forwarding live in ../Caddyfile. Both are kept identical across
 # the sibling repos.
