@@ -9,8 +9,8 @@
 # known prefix to the gateway.
 #
 # This is the AUTHORITATIVE shared edge config, kept identical across all project
-# repos (dpp / cbam / c2pa / eudr). Whichever repo is deployed serves the same
-# landing page + forwards the same prefixes. Edit once, copy to the sibling repos.
+# repos (tenders / dpp / cbam / c2pa / eudr). Whichever repo is deployed serves the
+# same landing page + forwards the same prefixes. Edit once, copy to the siblings.
 #
 # TLS: set SITE_ADDRESS to a domain (e.g. apis.example.com) in .env and Caddy
 # provisions a Let's Encrypt certificate automatically. Left unset it defaults to
@@ -50,11 +50,24 @@
 		header Content-Type text/plain
 		respond "User-agent: *
 Allow: /
+Sitemap: https://apis.allanninal.dev/tenders/sitemap.xml
 Sitemap: https://apis.allanninal.dev/dpp/sitemap.xml
 Sitemap: https://apis.allanninal.dev/cbam/sitemap.xml
 Sitemap: https://apis.allanninal.dev/c2pa/sitemap.xml
 Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 " 200
+	}
+
+	# --- Tenders (Tender & Procurement Intelligence API) ---
+	@tenders path /tenders/* /tenders
+	handle @tenders {
+		request_body {
+			max_size 2MB
+		}
+		reverse_proxy shared-apisix:9080 {
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+		}
 	}
 
 	# --- DPP (Digital Product Passport API) ---
@@ -111,7 +124,7 @@ Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 		respond `<!doctype html>
 		<html lang="en"><head><meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>APIs by Allan Niñal — developer-first EU compliance APIs (DPP, CBAM, C2PA, EUDR)</title>
+		<title>APIs by Allan Niñal — developer-first compliance &amp; public-data APIs (Tenders, DPP, CBAM, C2PA, EUDR)</title>
 		<meta name="description" content="A small family of free, developer-first APIs for EU compliance: Digital Product Passport issuance and resolution, CBAM embedded emissions, EU AI Act (Article 50) C2PA provenance, and EUDR deforestation-free checks. Public, rate-limited, standards-based, self-hosted behind one secure gateway.">
 		<meta name="keywords" content="EU compliance API, Digital Product Passport API, DPP registry, battery passport, CBAM API, C2PA provenance API, EU AI Act Article 50, EUDR API, embedded emissions, content credentials, deforestation-free, developer-first API, Allan Ninal">
 		<meta name="author" content="Allan Niñal">
@@ -134,10 +147,11 @@ Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 		{"@context":"https://schema.org","@graph":[
 		{"@type":"WebSite","name":"APIs by Allan Niñal","url":"https://apis.allanninal.dev/","description":"Developer-first EU compliance APIs: Digital Product Passport, CBAM, C2PA provenance, EUDR.","publisher":{"@type":"Person","name":"Allan Niñal","url":"https://www.allanninal.dev/","sameAs":["https://www.linkedin.com/in/allanninal/"]}},
 		{"@type":"ItemList","itemListElement":[
-		{"@type":"ListItem","position":1,"name":"Digital Product Passport API","url":"https://apis.allanninal.dev/dpp/"},
-		{"@type":"ListItem","position":2,"name":"CBAM Embedded Emissions API","url":"https://apis.allanninal.dev/cbam/"},
-		{"@type":"ListItem","position":3,"name":"EU AI Act Provenance & Label API","url":"https://apis.allanninal.dev/c2pa/"},
-		{"@type":"ListItem","position":4,"name":"EUDR Geolocation & Due-Diligence API","url":"https://apis.allanninal.dev/eudr/"}]},
+		{"@type":"ListItem","position":1,"name":"Tender & Procurement Intelligence API","url":"https://apis.allanninal.dev/tenders/"},
+		{"@type":"ListItem","position":2,"name":"Digital Product Passport API","url":"https://apis.allanninal.dev/dpp/"},
+		{"@type":"ListItem","position":3,"name":"CBAM Embedded Emissions API","url":"https://apis.allanninal.dev/cbam/"},
+		{"@type":"ListItem","position":4,"name":"EU AI Act Provenance & Label API","url":"https://apis.allanninal.dev/c2pa/"},
+		{"@type":"ListItem","position":5,"name":"EUDR Geolocation & Due-Diligence API","url":"https://apis.allanninal.dev/eudr/"}]},
 		{"@type":"Person","name":"Allan Niñal","url":"https://www.allanninal.dev/","jobTitle":"AI & Software Engineer","sameAs":["https://www.linkedin.com/in/allanninal/"]}]}
 		</script>
 		<style>
@@ -171,13 +185,18 @@ Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 		<body>
 		<nav class="topnav"><div class="nav-in">
 		<a class="brand" href="/"><span class="dot"></span> apis.allanninal.dev</a>
-		<a href="/dpp/">DPP</a><a href="/cbam/">CBAM</a><a href="/c2pa/">Provenance</a><a href="/eudr/">EUDR</a>
+		<a href="/tenders/">Tenders</a><a href="/dpp/">DPP</a><a href="/cbam/">CBAM</a><a href="/c2pa/">Provenance</a><a href="/eudr/">EUDR</a>
 		<a href="https://www.allanninal.dev/">About</a>
 		</div></nav>
 		<main>
 		<h1>Developer-first EU compliance APIs</h1>
 		<p class="sub">A small family of free, public, standards-based APIs — self-hosted behind one secure gateway, each turning a thorny EU regulation into a single clean request.</p>
 		<div class="cards">
+		<a class="card" href="/tenders/">
+		<h2>Tender &amp; Procurement Intelligence API</h2>
+		<p>Public tenders as clean JSON — normalised across TED, SAM.gov and OCDS portals, deduplicated across sources, with buyers and winners resolved on registration identifiers, delivered by search and signed webhook.</p>
+		<span class="reg">TED &middot; SAM.gov &middot; Open Contracting Data Standard</span>
+		</a>
 		<a class="card" href="/dpp/">
 		<h2>Digital Product Passport API</h2>
 		<p>Issue a battery passport, register it with the EU DPP Registry, and resolve it at a public URL with tiered access control (public / legitimate-interest / competent-authority).</p>
@@ -215,7 +234,7 @@ Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 		</main>
 		<footer>
 		<div class="foot-links">
-		<a href="/dpp/">DPP</a><a href="/cbam/">CBAM</a><a href="/c2pa/">Provenance</a><a href="/eudr/">EUDR</a>
+		<a href="/tenders/">Tenders</a><a href="/dpp/">DPP</a><a href="/cbam/">CBAM</a><a href="/c2pa/">Provenance</a><a href="/eudr/">EUDR</a>
 		<a href="/dpp/disclaimer.html">Disclaimer</a><a href="/dpp/license.html">License</a>
 		<a href="https://www.allanninal.dev/">allanninal.dev</a>
 		</div>
@@ -226,7 +245,7 @@ Sitemap: https://apis.allanninal.dev/eudr/sitemap.xml
 	}
 
 	handle {
-		respond "Not found. Available: /dpp/  /cbam/  /c2pa/  /eudr/" 404
+		respond "Not found. Available: /tenders/  /dpp/  /cbam/  /c2pa/  /eudr/" 404
 	}
 
 	log {

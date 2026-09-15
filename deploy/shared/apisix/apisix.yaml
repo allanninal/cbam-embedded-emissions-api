@@ -8,19 +8,120 @@
 # secret is never committed.
 #
 # This is the AUTHORITATIVE shared route table, kept identical across all project
-# repos (dpp / cbam / c2pa / eudr). Whichever repo is deployed brings the same
-# routes online. Edit once, copy to the sibling repos'
+# repos (tenders / dpp / cbam / c2pa / eudr). Whichever repo is deployed brings the
+# same routes online. Edit once, copy to the sibling repos'
 # deploy/shared/apisix/apisix.yaml.
 #
 # Isolation between co-located projects:
 #   project | path prefix | upstream         | gateway redis_prefix (DB 1)
 #   --------|-------------|------------------|----------------------------
+#   tenders | /tenders    | tenders-api:8796 | tenders:gw:
 #   dpp     | /dpp        | dpp-api:8794     | dpp:gw:
 #   cbam    | /cbam       | cbam-api:8792    | cbam:gw:
 #   c2pa    | /c2pa       | c2pa-api:8790    | c2pa:gw:
 #   eudr    | /eudr       | eudr-api:8787    | eudr:gw:
 #
 routes:
+  #
+  # ================= Tender & Procurement Intelligence API =================
+  #
+  # ---- Tenders: static reference API (FREE, not rate limited) ----
+  - id: tenders-static
+    uri: /tenders/api/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "tenders-api:8796": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/tenders/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,DELETE,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- Tenders: search, entities, saved searches, webhooks (rate limited) ----
+  - id: tenders-compute
+    uri: /tenders/v1/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "tenders-api:8796": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/tenders/(.*)", "/$1"]
+      # Per-client gateway rate limit keyed on the REAL client IP (resolved by
+      # real-ip from the trusted proxy). We deliberately do NOT key on
+      # $http_authorization: an attacker could rotate that header to mint unlimited
+      # buckets. Per-API-key budgeting is enforced by the app against its key store.
+      limit-count:
+        count: 60
+        time_window: 60
+        rejected_code: 429
+        rejected_msg: "rate limit exceeded (gateway)"
+        key_type: "var"
+        key: "remote_addr"
+        policy: redis
+        redis_host: "shared-redis"
+        redis_port: 6379
+        redis_password: "__REDIS_PASSWORD__"
+        redis_database: 1
+        redis_prefix: "tenders:gw:"
+        show_limit_quota_header: true
+        allow_degradation: true    # fail-open if Redis is unreachable
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,DELETE,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # ---- Tenders: docs homepage + static site assets (FREE) ----
+  - id: tenders-site
+    uri: /tenders/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "tenders-api:8796": 1
+    plugins:
+      real-ip:
+        source: http_x_forwarded_for
+        recursive: true
+        trusted_addresses:
+          - 172.16.0.0/12
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+      proxy-rewrite:
+        regex_uri: ["^/tenders/(.*)", "/$1"]
+      cors:
+        allow_origins: "*"
+        allow_methods: "GET,POST,DELETE,OPTIONS"
+        allow_headers: "authorization,content-type"
+
+  # Redirect bare /tenders -> /tenders/ so the homepage's relative asset links resolve.
+  - id: tenders-root-redirect
+    uri: /tenders
+    plugins:
+      redirect:
+        uri: /tenders/
+        ret_code: 308
+    upstream:
+      type: roundrobin
+      nodes:
+        "tenders-api:8796": 1
+
   #
   # ================= DPP (Digital Product Passport API) =================
   #
