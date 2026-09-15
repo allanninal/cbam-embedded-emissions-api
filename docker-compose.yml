@@ -81,11 +81,12 @@ services:
       INTERVAL_SECONDS: "86400"
     entrypoint: ["/bin/sh", "-c", "apk add --no-cache sqlite >/dev/null && exec /bin/sh /opt/backup.sh"]
     volumes:
-      # Mounted read-WRITE on purpose: sqlite3 .backup opens the WAL database,
-      # which needs to create the -shm/-wal sidecar files. With a :ro mount every
-      # run fails with "unable to open database file" and no backup is ever
-      # written. The script only ever reads the database.
-      - cbam-data:/data
+      # Read-only on purpose: the backup sidecar must never be able to modify or
+      # delete live data. sqlite3 .backup can still read the WAL database because
+      # the api container is always running (depends_on) and keeps the -shm/-wal
+      # sidecars present; SQLite only needs to CREATE -shm when no writer is
+      # attached, which is the one case a :ro mount would refuse.
+      - cbam-data:/data:ro
       - cbam-backups:/backups
       - ./deploy/backup/backup.sh:/opt/backup.sh:ro
     networks:
